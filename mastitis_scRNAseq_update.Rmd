@@ -1,0 +1,104 @@
+---
+title: "Mastitis scRNAseq update"
+output: html_document
+date: '2022-09-15'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(kableExtra)
+
+```
+
+# Overview {.tabset}
+
+
+## Cellranger stats  
+  
+!['cells per replicate'](outputs/Estimated_cells.jpeg)
+!['reads per cell'](outputs/Estimated_reads_per_cell.jpeg)  
+
+
+
+
+```{r}
+summarydat <- 
+  read_tsv('outputs/first_cellranger_results.tsv') %>% 
+  select(-`Number of Reads`) %>% 
+  mutate(ID=paste0(individual, tissue)) %>% 
+  select(ID, everything(),-individual, -tissue,)
+  
+
+summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_size = 10)
+```
+
+  
+## SoupX with markers {.tabset}  
+  
+### 1312blood  
+  
+#### Pre-SoupX  
+  
+![''](SoupX/1312blood_pre_soupX.jpeg)  
+  
+#### Post-SoupX  
+  
+![''](SoupX/1312blood_post_soupX.jpeg)    
+  
+  
+### 1312milk  
+  
+#### Pre-SoupX  
+  
+![''](SoupX/1312milk_pre_soupX.jpeg)  
+  
+#### Post-SoupX  
+  
+![''](SoupX/1312milk_post_soupX.jpeg)    
+  
+### 1630blood  
+  
+#### Pre-SoupX  
+  
+![''](SoupX/1630blood_pre_soupX.jpeg)  
+  
+#### Post-SoupX  
+  
+![''](SoupX/1630blood_post_soupX.jpeg)  
+
+### 1630milk  
+  
+#### Pre-SoupX  
+  
+![''](SoupX/1630milk_pre_soupX.jpeg)  
+  
+#### Post-SoupX  
+  
+![''](SoupX/1630milk_post_soupX.jpeg)  
+  
+### 1634blood  
+  
+#### Pre-SoupX  
+  
+![''](SoupX/1634blood_pre_soupX.jpeg)  
+  
+#### Post-SoupX  
+  
+![''](SoupX/1634blood_post_soupX.jpeg)  
+  
+
+  
+### 1634milk  
+  
+#### Pre-SoupX  
+  
+![''](SoupX/1634milk_pre_soupX.jpeg)  
+  
+#### Post-SoupX  
+  
+![''](SoupX/1634milk_post_soupX.jpeg)  
+  
+
+
+

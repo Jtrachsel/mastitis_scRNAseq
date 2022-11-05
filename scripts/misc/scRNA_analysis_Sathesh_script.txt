@@ -1,0 +1,479 @@
+1. tar
+
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p short
+#SBATCH --ntasks-per-node=40
+#SBATCH -t 24:00:00
+#SBATCH -J TAR
+#SBATCH -o OUT/TAR.out
+#SBATCH -e ERR/TAR.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=end
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+tar -xvf 4,5,6_31025_01_1312milk_H7LMV_1705.tar
+
+2.1 FQC1
+
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p short
+#SBATCH --ntasks-per-node=40
+#SBATCH -t 24:00:00
+#SBATCH -J FQC1
+#SBATCH -o OUT/FQC1.out
+#SBATCH -e ERR/FQC1.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=END
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+module load fastqc
+module load parallel
+parallel -j 6 "fastqc {} -t 6 -o FQC/1312blood/" ::: 1312blood/*.fastq.gz
+parallel -j 6 "fastqc {} -t 6 -o FQC/1312milk/" ::: 1312milk/*.fastq.gz
+
+2.2 FQC2
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p short
+#SBATCH --ntasks-per-node=40
+#SBATCH -t 24:00:00
+#SBATCH -J FQC2
+#SBATCH -o OUT/FQC2.out
+#SBATCH -e ERR/FQC2.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=END
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+module load fastqc
+module load parallel
+parallel -j 6 "fastqc {} -t 6 -o FQC/1630blood/" ::: 1630blood/*.fastq.gz
+parallel -j 6 "fastqc {} -t 6 -o FQC/1630milk/" ::: 1630milk/*.fastq.gz
+
+2.3 FQC3
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p short
+#SBATCH --ntasks-per-node=40
+#SBATCH -t 24:00:00
+#SBATCH -J FQC3
+#SBATCH -o OUT/FQC3.out
+#SBATCH -e ERR/FQC3.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=END
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+module load fastqc
+module load parallel
+parallel -j 6 "fastqc {} -t 6 -o FQC/1634blood/" ::: 1634blood/*.fastq.gz
+parallel -j 6 "fastqc {} -t 6 -o FQC/1634milk/" ::: 1634milk/*.fastq.gz
+
+3.1 Blo12Tr
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p short
+#SBATCH --ntasks-per-node=40
+#SBATCH -t 24:00:00
+#SBATCH -J BLO12TR
+#SBATCH -o OUT/BLO12TR.out
+#SBATCH -e ERR/BLO12TR.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=begin
+#SBATCH --mail-type=end
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+cellranger count --id=BLO12Trim \
+                   --transcriptome=BOS2 \
+                   --fastqs=1312bloodTrim \
+                   --sample=1312blood-1,1312blood-2,1312blood-3,1312blood-4 \
+                   --localcores=38
+
+3.2 mkgen1
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p short
+#SBATCH --ntasks-per-node=40
+#SBATCH -t 24:00:00
+#SBATCH -J gen1
+#SBATCH -o OUT/gen1.out
+#SBATCH -e ERR/gen1.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=end
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+cellranger mkgtf Bos_taurus.ARS-UCD1.2.100.gtf Bos_taurus.ARS-UCD1.2.100_Fil.gtf \
+	--attribute=gene_biotype:protein_coding \
+	--attribute=gene_biotype:antisense \
+	--attribute=gene_biotype:IG_C_gene \
+	--attribute=gene_biotype:IG_C_pseudogene \
+	--attribute=gene_biotype:IG_D_gene \
+	--attribute=gene_biotype:IG_J_gene \
+	--attribute=gene_biotype:IG_J_pseudogene \
+	--attribute=gene_biotype:IG_LV_gene \
+	--attribute=gene_biotype:IG_V_gene \
+	--attribute=gene_biotype:IG_V_pseudogene \
+	--attribute=gene_biotype:lincRNA \
+	--attribute=gene_biotype:miRNA \
+	--attribute=gene_biotype:misc_RNA \
+	--attribute=gene_biotype:Mt_rRNA \
+	--attribute=gene_biotype:pseudogene \
+	--attribute=gene_biotype:ribozyme \
+	--attribute=gene_biotype:rRNA \
+	--attribute=gene_biotype:scaRNA \
+	--attribute=gene_biotype:snoRNA \
+	--attribute=gene_biotype:snRNA \
+	--attribute=gene_biotype:sRNA \
+	--attribute=gene_biotype:TR_C_gene
+	--attribute=gene_biotype:TR_D_gene \
+	--attribute=gene_biotype:TR_J_gene \
+	--attribute=gene_biotype:TR_J_pseudogene \
+	--attribute=gene_biotype:TR_V_gene \
+	--attribute=gene_biotype:TR_V_pseudogene
+
+cellranger mkref --genome=BOS2 \
+                 --fasta=Bos_taurus.ARS-UCD1.2.dna.toplevel.fa \
+                 --genes=Bos_taurus.ARS-UCD1.2.100_Fil.gtf \
+                 --ref-version=1.2.100
+
+3.3 mkgen2
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p short
+#SBATCH --ntasks-per-node=40
+#SBATCH -t 24:00:00
+#SBATCH -J gen2
+#SBATCH -o OUT/gen2.out
+#SBATCH -e ERR/gen2.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=end
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+cellranger mkgtf Bos_taurus.ARS-UCD1.2.100_M.gtf Bos_taurus.ARS-UCD1.2.100_MFil.gtf \
+	--attribute=gene_biotype:protein_coding \
+	--attribute=gene_biotype:antisense \
+	--attribute=gene_biotype:IG_C_gene \
+	--attribute=gene_biotype:IG_C_pseudogene \
+	--attribute=gene_biotype:IG_D_gene \
+	--attribute=gene_biotype:IG_J_gene \
+	--attribute=gene_biotype:IG_J_pseudogene \
+	--attribute=gene_biotype:IG_LV_gene \
+	--attribute=gene_biotype:IG_V_gene \
+	--attribute=gene_biotype:IG_V_pseudogene \
+	--attribute=gene_biotype:lincRNA \
+	--attribute=gene_biotype:miRNA \
+	--attribute=gene_biotype:misc_RNA \
+	--attribute=gene_biotype:Mt_rRNA \
+	--attribute=gene_biotype:pseudogene \
+	--attribute=gene_biotype:ribozyme \
+	--attribute=gene_biotype:rRNA \
+	--attribute=gene_biotype:scaRNA \
+	--attribute=gene_biotype:snoRNA \
+	--attribute=gene_biotype:snRNA \
+	--attribute=gene_biotype:sRNA \
+	--attribute=gene_biotype:TR_C_gene
+	--attribute=gene_biotype:TR_D_gene \
+	--attribute=gene_biotype:TR_J_gene \
+	--attribute=gene_biotype:TR_J_pseudogene \
+	--attribute=gene_biotype:TR_V_gene \
+	--attribute=gene_biotype:TR_V_pseudogene
+
+cellranger mkref --genome=BOS2M \
+                 --fasta=Bos_taurus.ARS-UCD1.2.dna.toplevel.fa \
+                 --genes=Bos_taurus.ARS-UCD1.2.100_MFil.gtf \
+                 --ref-version=1.2.100
+
+4. Blo12M
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 100
+#SBATCH --mem=1400G
+#SBATCH -t 160:00:00
+#SBATCH -J BLO12M
+#SBATCH -o OUT/BLO12M.out
+#SBATCH -e ERR/BLO12M.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+cellranger count --id=BLO12M \
+                   --transcriptome=BOS2M \
+                   --fastqs=1312blood \
+                   --sample=1312blood-1,1312blood-2,1312blood-3,1312blood-4 \
+                   --localcores=99
+
+5.1 MIL34R
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=450G
+#SBATCH -t 160:00:00
+#SBATCH -J MIL34R
+#SBATCH -o OUT/MIL34R.out
+#SBATCH -e ERR/MIL34R.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+i=$(($SLURM_ARRAY_TASK_ID - 1))
+module load java/1.8.0_121
+module load zlib/1.2.7
+libs = 1634milk
+R2=(`ls  -1 1634milk/${libs[$i]}*_R2_001.fastq.gz |perl -p -e 's/\n/,/' |perl -p -e  's/,$//'` )
+perl ~/tools/rcorrector/run_rcorrector.pl -s  ${R2[0]}  -k 25  -od ./Rcorrected  -t 72
+
+5.2 MIL30R
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=450G
+#SBATCH -t 160:00:00
+#SBATCH -J MIL30R
+#SBATCH -o OUT/MIL30R.out
+#SBATCH -e ERR/MIL30R.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+i=$(($SLURM_ARRAY_TASK_ID - 1))
+module load java/1.8.0_121
+module load zlib/1.2.7
+libs = 1630milk
+R2=(`ls  -1 1630milk/${libs[$i]}*_R2_001.fastq.gz |perl -p -e 's/\n/,/' |perl -p -e  's/,$//'` )
+perl ~/tools/rcorrector/run_rcorrector.pl -s  ${R2[0]}  -k 25  -od ./Rcorrected  -t 72
+
+
+5.3 MIL12R
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=450G
+#SBATCH -t 160:00:00
+#SBATCH -J MIL12R
+#SBATCH -o OUT/MIL12R.out
+#SBATCH -e ERR/MIL12R.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+i=$(($SLURM_ARRAY_TASK_ID - 1))
+module load java/1.8.0_121
+module load zlib/1.2.7
+libs = 1312milk
+R2=(`ls  -1 1312milk/${libs[$i]}*_R2_001.fastq.gz |perl -p -e 's/\n/,/' |perl -p -e  's/,$//'` )
+perl ~/tools/rcorrector/run_rcorrector.pl -s  ${R2[0]}  -k 25  -od ./Rcorrected  -t 72
+
+6.1 BLO34R
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=450G
+#SBATCH -t 160:00:00
+#SBATCH -J BLO34R
+#SBATCH -o OUT/BLO34R.out
+#SBATCH -e ERR/BLO34R.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+i=$(($SLURM_ARRAY_TASK_ID - 1))
+module load java/1.8.0_121
+module load zlib/1.2.7
+libs = 1634blood
+R2=(`ls  -1 1634blood/${libs[$i]}*_R2_001.fastq.gz |perl -p -e 's/\n/,/' |perl -p -e  's/,$//'` )
+perl ~/tools/rcorrector/run_rcorrector.pl -s  ${R2[0]}  -k 25  -od ./Rcorrected  -t 72
+
+6.2 BLO30R
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=450G
+#SBATCH -t 160:00:00
+#SBATCH -J BLO30R
+#SBATCH -o OUT/BLO30R.out
+#SBATCH -e ERR/BLO30R.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+i=$(($SLURM_ARRAY_TASK_ID - 1))
+module load java/1.8.0_121
+module load zlib/1.2.7
+libs = 1630blood
+R2=(`ls  -1 1630blood/${libs[$i]}*_R2_001.fastq.gz |perl -p -e 's/\n/,/' |perl -p -e  's/,$//'` )
+perl ~/tools/rcorrector/run_rcorrector.pl -s  ${R2[0]}  -k 25  -od ./Rcorrected  -t 72
+
+6.3 BLO12R
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=450G
+#SBATCH -t 160:00:00
+#SBATCH -J BLO12R
+#SBATCH -o OUT/BLO12R.out
+#SBATCH -e ERR/BLO12R.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+i=$(($SLURM_ARRAY_TASK_ID - 1))
+module load java/1.8.0_121
+module load zlib/1.2.7
+libs = 1312blood
+R2=(`ls  -1 1312blood/${libs[$i]}*_R2_001.fastq.gz |perl -p -e 's/\n/,/' |perl -p -e  's/,$//'` )
+perl ~/tools/rcorrector/run_rcorrector.pl -s  ${R2[0]}  -k 25  -od ./Rcorrected  -t 72
+
+7.1 Blo12
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=700G
+#SBATCH -t 160:00:00
+#SBATCH -J BLO12
+#SBATCH -o OUT/BLO12.out
+#SBATCH -e ERR/BLO12.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+cellranger count --id=BLO12 \
+                   --transcriptome=BOS2M \
+                   --fastqs=Repaired \
+                   --sample=1312blood-1,1312blood-2,1312blood-3,1312blood-4 \
+                   --localcores=72
+
+7.2 Blo30
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=700G
+#SBATCH -t 160:00:00
+#SBATCH -J BLO30
+#SBATCH -o OUT/BLO30.out
+#SBATCH -e ERR/BLO30.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+cellranger count --id=BLO30 \
+                   --transcriptome=BOS2M \
+                   --fastqs=Repaired \
+                   --sample=1630blood-1,1630blood-2,1630blood-3,1630blood-4 \
+                   --localcores=72
+
+7.3 Blo34
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=700G
+#SBATCH -t 160:00:00
+#SBATCH -J BLO34
+#SBATCH -o OUT/BLO34.out
+#SBATCH -e ERR/BLO34.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+cellranger count --id=BLO34 \
+                   --transcriptome=BOS2M \
+                   --fastqs=Repaired \
+                   --sample=1634blood-1,1634blood-2,1634blood-3,1634blood-4 \
+                   --localcores=72
+
+8.1 Mil12
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=700G
+#SBATCH -t 160:00:00
+#SBATCH -J MIL12
+#SBATCH -o OUT/MIL12.out
+#SBATCH -e ERR/MIL12.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+cellranger count --id=MIL12 \
+                   --transcriptome=BOS2M \
+                   --fastqs=Repaired \
+                   --sample=1312milk-1,1312milk-2,1312milk-3,1312milk-4 \
+                   --localcores=72
+
+8.2 Mil30
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=700G
+#SBATCH -t 160:00:00
+#SBATCH -J MIL30
+#SBATCH -o OUT/MIL30.out
+#SBATCH -e ERR/MIL30.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+cellranger count --id=MIL30 \
+                   --transcriptome=BOS2M \
+                   --fastqs=Repaired \
+                   --sample=1630milk-1,1630milk-2,1630milk-3,1630milk-4 \
+                   --localcores=72
+
+8.3 Mil34
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p mem
+#SBATCH -n 72
+#SBATCH --mem=700G
+#SBATCH -t 160:00:00
+#SBATCH -J MIL34
+#SBATCH -o OUT/MIL34.out
+#SBATCH -e ERR/MIL34.err
+#SBATCH --mail-user=sathesh@iastate.edu
+#SBATCH --mail-type=FAIL,END
+cd $SLURM_SUBMIT_DIR
+ulimit -s unlimited
+scontrol show job $SLURM_JOB_ID
+module purge
+cellranger count --id=MIL34 \
+                   --transcriptome=BOS2M \
+                   --fastqs=Repaired \
+                   --sample=1634milk-1,1634milk-2,1634milk-3,1634milk-4 \
+                   --localcores=72
+
+
+
