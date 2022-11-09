@@ -1,7 +1,11 @@
 ---
 title: "Mastitis scRNAseq update"
-output: html_document
 date: '2022-09-15'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
 ---
 
 ```{r setup, include=FALSE}
@@ -11,11 +15,69 @@ library(kableExtra)
 
 ```
 
-# Overview {.tabset}
+# Overview  
 
 
-## Cellranger stats  
+# Extract Raw data  
+
+## Code  
+
+- scripts/01_tar.slurm  
+
+
+
+```{bash, eval=FALSE, code = readLines("scripts/01_tar.slurm")}
+
+
+
+```
+
+# Prepare reference genome  
+
+## Code  
   
+- scripts/02_cellranger_reference_prep_script.slurm  
+
+```{bash, code=readLines("scripts/02_cellranger_reference_prep_script.slurm"), eval=FALSE}
+
+
+```
+
+# FastQC  
+
+## Code  
+  
+- scripts/03_fastQC.slurm  
+  
+```{bash, code=readLines("scripts/03_fastQC.slurm"), eval=FALSE} 
+
+```
+
+# Cellranger  
+
+
+## Code {.tabset}  
+  
+### Cellranger Slurm job array  
+
+- scripts/04_cellranger_map_individual.slurm    
+  
+```{bash, eval=FALSE, code=readLines("scripts/04_cellranger_map_individual.slurm")}
+
+
+```
+
+### Cellranger QC metrics  
+
+- This script checks some summary statistics from the Cellranger runs  
+- scripts/05_check_mapping.R  
+  
+```{r, eval=FALSE, code=readLines('scripts/05_check_mapping.R')}
+
+```
+  
+## Cellranger Summary  
+
 !['cells per replicate'](outputs/Estimated_cells.jpeg)
 !['reads per cell'](outputs/Estimated_reads_per_cell.jpeg)  
 
@@ -40,52 +102,52 @@ summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_si
   
 #### Pre-SoupX  
   
-![''](SoupX/1312blood_pre_soupX.jpeg)  
+![''](outputs/figures/1312blood_pre_soupX.jpeg)  
   
 #### Post-SoupX  
   
-![''](SoupX/1312blood_post_soupX.jpeg)    
+![''](outputs/figures/1312blood_post_soupX.jpeg)    
   
   
 ### 1312milk  
   
 #### Pre-SoupX  
   
-![''](SoupX/1312milk_pre_soupX.jpeg)  
+![''](outputs/figures/1312milk_pre_soupX.jpeg)  
   
 #### Post-SoupX  
   
-![''](SoupX/1312milk_post_soupX.jpeg)    
+![''](outputs/figures/1312milk_post_soupX.jpeg)    
   
 ### 1630blood  
   
 #### Pre-SoupX  
   
-![''](SoupX/1630blood_pre_soupX.jpeg)  
+![''](outputs/figures/1630blood_pre_soupX.jpeg)  
   
 #### Post-SoupX  
   
-![''](SoupX/1630blood_post_soupX.jpeg)  
+![''](outputs/figures/1630blood_post_soupX.jpeg)  
 
 ### 1630milk  
   
 #### Pre-SoupX  
   
-![''](SoupX/1630milk_pre_soupX.jpeg)  
+![''](outputs/figures/1630milk_pre_soupX.jpeg)  
   
 #### Post-SoupX  
   
-![''](SoupX/1630milk_post_soupX.jpeg)  
+![''](outputs/figures/1630milk_post_soupX.jpeg)  
   
 ### 1634blood  
   
 #### Pre-SoupX  
   
-![''](SoupX/1634blood_pre_soupX.jpeg)  
+![''](outputs/figures/1634blood_pre_soupX.jpeg)  
   
 #### Post-SoupX  
   
-![''](SoupX/1634blood_post_soupX.jpeg)  
+![''](outputs/figures/1634blood_post_soupX.jpeg)  
   
 
   
@@ -93,11 +155,11 @@ summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_si
   
 #### Pre-SoupX  
   
-![''](SoupX/1634milk_pre_soupX.jpeg)  
+![''](outputs/figures/1634milk_pre_soupX.jpeg)  
   
 #### Post-SoupX  
   
-![''](SoupX/1634milk_post_soupX.jpeg)  
+![''](outputs/figures/1634milk_post_soupX.jpeg)  
   
 
 

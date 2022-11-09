@@ -1,0 +1,9 @@
+raw_data/lane4  raw_data/lane5: raw_data/lane6:
+1312blood-1_S18_L004_R1_001.fastq 1312blood-1_S18_L005_R1_001.fastq 1312blood-1_S18_L006_R1_001.fastq
+1312blood-1_S18_L004_R2_001.fastq 1312blood-1_S18_L005_R2_001.fastq 1312blood-1_S18_L006_R2_001.fastq
+1312blood-2_S19_L004_R1_001.fastq 1312blood-2_S19_L005_R1_001.fastq 1312blood-2_S19_L006_R1_001.fastq
+1312blood-2_S19_L004_R2_001.fastq 1312blood-2_S19_L005_R2_001.fastq 1312blood-2_S19_L006_R2_001.fastq
+1312blood-3_S20_L004_R1_001.fastq 1312blood-3_S20_L005_R1_001.fastq 1312blood-3_S20_L006_R1_001.fastq
+1312blood-3_S20_L004_R2_001.fastq 1312blood-3_S20_L005_R2_001.fastq 1312blood-3_S20_L006_R2_001.fastq
+1312blood-4_S21_L004_R1_001.fastq 1312blood-4_S21_L005_R1_001.fastq 1312blood-4_S21_L006_R1_001.fastq
+1312blood-4_S21_L004_R2_001.fastq 1312blood-4_S21_L005_R2_001.fastq 1312blood-4_S21_L006_R2_001.fastq

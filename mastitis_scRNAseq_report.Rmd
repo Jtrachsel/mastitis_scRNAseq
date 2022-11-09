@@ -1,0 +1,326 @@
+---
+title: "Mastitis scRNAseq update"
+date: '2022-09-15'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(kableExtra)
+
+```
+
+# 00-Overview  
+
+- This document outlines all the steps taken in the analysis of the mastitis single cell RNAseq data  
+- Each heading corresponds to one step/script in the pipeline.  
+- Code chunks can be expanded to see the script for each step.  
+- All code is available at https://github.com/Jtrachsel/mastitis_scRNAseq  
+  
+# 01-Extract Raw data  
+  
+- scripts/01_tar.slurm  
+  
+```{bash, eval=FALSE, code = readLines("scripts/01_tar.slurm")}
+
+
+
+```
+
+# 02-Prepare reference genome  
+  
+- scripts/02_cellranger_reference_prep_script.slurm  
+  
+```{bash, code=readLines("scripts/02_cellranger_reference_prep_script.slurm"), eval=FALSE}
+
+
+```
+  
+# 03-FastQC  
+  
+- scripts/03_fastQC.slurm  
+  
+```{bash, code=readLines("scripts/03_fastQC.slurm"), eval=FALSE} 
+
+```
+
+# 04-Cellranger  
+
+- This script creates a slurm job arrary to perform a cellranger mapping job for each partitioning sample  
+- scripts/04_cellranger_map_individual.slurm    
+  
+```{bash, eval=FALSE, code=readLines("scripts/04_cellranger_map_individual.slurm")}
+
+
+```
+
+# 05-Cellranger QC metrics {.tabset}  
+
+- This script checks some summary statistics from the Cellranger runs  
+- scripts/05_check_mapping.R  
+
+
+## Figures    
+
+!['cells per replicate'](outputs/Estimated_cells.jpeg)
+!['reads per cell'](outputs/Estimated_reads_per_cell.jpeg)  
+
+
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+summarydat <- 
+  read_tsv('outputs/first_cellranger_results.tsv') %>% 
+  select(-`Number of Reads`) %>% 
+  mutate(ID=paste0(individual, tissue)) %>% 
+  select(ID, everything(),-individual, -tissue,)
+  
+
+summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_size = 10)
+```
+  
+## Code  
+  
+```{r, eval=FALSE, code=readLines('scripts/05_check_mapping.R')}
+
+```
+    
+  
+# 06-Ensembl Gene info  
+
+- Map detected gene ids to ensembl database to get info  
+  - Gene names  
+  - Orthologues  
+  - GO terms  
+  - Other?  
+  
+```{r, eval=FALSE, code=readLines('scripts/06_map_gene_ids.R')}
+```
+
+# 07-Ambient RNA removal with SoupX {.tabset}  
+  
+- An R script defines the SoupX commands used  
+- A bash script defines a slurm job to run the R script  
+  
+## Figures {.tabset}  
+
+### 1312 blood  
+#### pre-SoupX  
+![Pre-SoupX](./outputs/figures/1312blood_pre_soupX.jpeg)  
+  
+#### post-SoupX  
+![Post-SoupX](./outputs/figures/1312blood_post_soupX.jpeg)  
+  
+
+### 1312 milk  
+#### pre-SoupX  
+![Pre-SoupX](./outputs/figures/1312milk_pre_soupX.jpeg)  
+  
+#### post-SoupX  
+![Post-SoupX](./outputs/figures/1312milk_post_soupX.jpeg)  
+  
+### 1630 blood  
+#### pre-SoupX  
+![Pre-SoupX](./outputs/figures/1630blood_pre_soupX.jpeg)  
+  
+#### post-SoupX  
+![Post-SoupX](./outputs/figures/1630blood_post_soupX.jpeg)  
+  
+
+### 1630 milk  
+#### pre-SoupX  
+![Pre-SoupX](./outputs/figures/1630milk_pre_soupX.jpeg)  
+  
+#### post-SoupX  
+![Post-SoupX](./outputs/figures/1630milk_post_soupX.jpeg)  
+  
+### 1634 blood  
+#### pre-SoupX  
+![Pre-SoupX](./outputs/figures/1634blood_pre_soupX.jpeg)  
+  
+#### post-SoupX  
+![Post-SoupX](./outputs/figures/1634blood_post_soupX.jpeg)  
+  
+
+### 1634 milk  
+#### pre-SoupX  
+![Pre-SoupX](./outputs/figures/1634milk_pre_soupX.jpeg)  
+  
+#### post-SoupX  
+![Post-SoupX](./outputs/figures/1634milk_post_soupX.jpeg)  
+  
+## Code {.tabset}  
+  
+### R script  
+
+```{r, eval=FALSE, code=readLines('scripts/07_SoupX.R')}
+
+```  
+  
+### bash script  
+
+```{r, eval=FALSE, code=readLines('scripts/07_SoupX.slurm')}
+
+```  
+  
+# 08-Doublet removal with scDblFinder  
+  
+- An R script defines the scDblFinder commands to be run.  
+- A bash script defines a slurm job that runs the R script.  
+
+## Code {.tabset}  
+
+### R script  
+
+```{r, code=readLines('scripts/08_scDblFinder.R'), eval=FALSE}
+```  
+  
+### bash script  
+
+```{bash, code=readLines('scripts/08_scDblFinder.slurm'), eval=FALSE}
+```
+  
+# 09-QC and cell removal {.tabset}  
+
+- Generates basic per-cell QC metrics  
+  
+- Removes "bad" cells based on these criteria:  
+  - Doublets  
+  - Greater than 10% mitochondrial reads  
+  - Less than 150 detected genes  
+  - Greater than 3000 detected genes  
+- rRNA depletion partially failed for one sample  
+  - removed rRNA genes from downstream analysis  
+  - most cells in all but one sample had no rRNA genes
+
+- Outputs a Seurat object for downstream use  
+
+## Figures  
+  
+![rRNA](./outputs/figures/rRNA_percent.jpeg)  
+  
+  
+![mito](./outputs/figures/mitochondria_percent.jpeg)  
+  
+![doublets](./outputs/figures/num_doublets.jpeg)  
+  
+  
+![removed cells](./outputs/figures/removed_cells.jpeg)  
+  
+## Code  
+  
+```{r, eval=FALSE, code=readLines('scripts/09_QC.R')} 
+```  
+
+
+  
+
+# 10-Seurat Integrate {.tabset}  
+
+- Integrates all partitioning events.  
+- Checks 2 different options for integration  
+  - Integrate by Tissue (Blood, Milk)  
+    - no integration for samples within a tissue, then integrates the two tissues  
+  - Integrate by sample_ID  
+    - integrates each partitioning event one by one  
+- Follows Seurat integration tutorial  
+- No major differences between the integration strategies  
+  
+## Code  
+```{r, eval=FALSE, code=readLines('scripts/10_integrate.R')}
+```
+  
+  
+# 11-Cluster {.tabset}  
+
+- Explores "dimensionality" of data  
+- For each integration method:  
+  - Clusters the cells using various choices of dimensionality  
+  - Generate UMAP and TSNE Dim plots  
+  
+- Chose to continue with:  
+  - **Integrate by Sample_ID**  
+  - **dimensionality = 30**  
+  
+  
+## Figures  
+
+
+elbow plots  
+![](./outputs/figures/int_by_samp_elbow.jpeg)  
+![](./outputs/figures/int_by_tissue_elbow.jpeg)  
+```{r, results='asis', echo=FALSE}
+files <- list.files(path = "outputs/figures", pattern = ".*sample_ID_.*_clusters.jpeg", full.names = TRUE)
+for (f in files) {
+  cat(paste0("![image_label](", f, ")\n"))
+  }
+```
+  
+num_clusters by resolution
+![](./outputs/figures/num_clusters_by_resolution.jpeg)
+  
+  
+## Code
+  
+```{r, eval=FALSE, code=readLines('scripts/11_cluster.R')}  
+```
+  
+  
+# 12-Check Marker Genes  
+  
+- Takes a pre-existing set of marker genes and checks which ones are informative
+- removes non-informative marker genes from consideration  
+  - usually because they are detected in very few cells  
+
+```{r, eval=FALSE, code=readLines('scripts/12_marker_genes.R')}
+```
+  
+  
+# 13-Assign General Cluster Identities {.tabset}  
+  
+- uses marker gene expression to assign cell clusters very broad types  
+  - T cell  
+  - B cell  
+  - Myeloid  
+  
+  
+## Figures {.tabset}
+
+### general figs  
+  
+![](./outputs/figures/grouped_dot_plot.jpeg)  
+![](./outputs/figures/dim_plot_dot_plot_group.jpeg)    
+  
+![](./outputs/figures/dim_plot_manual_ID_coarse.jpeg)  
+
+![](./outputs/figures/dim_plot_manual_ID.jpeg)  
+  
+  
+  
+
+### marker feature plots  
+  
+```{r, results='asis', echo=FALSE}
+files <- list.files(path = "outputs", pattern = "30_.*.jpeg", full.names = TRUE)
+for (f in files) {
+  cat(paste0("![image_label](", f, ")\n"))
+  }
+```  
+  
+## Code  
+
+```{r, eval=FALSE, code=readLines('scripts/13_general_cluster_identity.R')} 
+```
+  
+  
+  
+
+
+
+
