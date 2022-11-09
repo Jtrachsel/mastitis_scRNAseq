@@ -1,15 +1,15 @@
 #!/bin/bash
 
-#SBATCH --job-name=tar                              # name of the job submitted
-#SBATCH -p short                                        # name of the queue you are submitting to
-#SBATCH -N 1                                            # number of nodes in this job
-#SBATCH -n 40                                           # number of cores/tasks in this job, you get all 20 cores with 2 threads per core with hyperthreading
-#SBATCH -t 48:00:00                                     # time allocated for this job hours:mins:seconds
-#SBATCH -o "stdout.%j.%N"                               # standard out %j adds job number to outputfile name and %N adds the node name
-#SBATCH -e "stderr.%j.%N"                               # optional but it prints our standard error
-#SBATCH --mem=64G   
+#SBATCH --job-name=tar
+#SBATCH -p short
+#SBATCH -N 1
+#SBATCH -n 40
+#SBATCH -t 48:00:00
+#SBATCH -o "stdout.%j.%N"
+#SBATCH -e "stderr.%j.%N"
+#SBATCH --mem=64G
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=julestrachsel@gmail.com
+#SBATCH --mail-user=
 
 set -e
 module load parallel

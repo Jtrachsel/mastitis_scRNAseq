@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#SBATCH --job-name=reference_prep                              # name of the job submitted
-#SBATCH -p short                                        # name of the queue you are submitting to
-#SBATCH -N 1                                            # number of nodes in this job
-#SBATCH -n 8                                           # number of cores/tasks in this job, you get all 20 cores with 2 threads per core with hyperthreading
-#SBATCH -t 48:00:00                                     # time allocated for this job hours:mins:seconds
-#SBATCH -o ./logs/reference_"stdout.%j.%N"                               # standard out %j adds job number to outputfile name and %N adds the node name
-#SBATCH -e ./logs/reference_"stderr.%j.%N"                               # optional but it prints our standard error
+#SBATCH --job-name=reference_prep
+#SBATCH -p short
+#SBATCH -N 1
+#SBATCH -n 8
+#SBATCH -t 48:00:00
+#SBATCH -o ./logs/reference_"stdout.%j.%N"
+#SBATCH -e ./logs/reference_"stderr.%j.%N"
 #SBATCH --mem=64G
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=julestrachsel@gmail.com
