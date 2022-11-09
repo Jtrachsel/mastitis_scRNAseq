@@ -90,7 +90,7 @@ ElbowPlot(integrated_by_sample_ID, ndims = 100) +
   annotate(geom = 'label', x=pcs_ID[1],y=10, label=pcs_ID[1])+
   ggtitle('dimensionality choices for integrated by sample')
 
-ggsave(filename = 'outputs/figures/int_by_samp_elbow.jpeg', width = 7, height = 5, units = 'in', bg='white')
+ggsave(filename = 'outputs/figures/int_by_samp_elbow.jpeg', width = 5, height = 3.5, units = 'in', bg='white')
 
 ElbowPlot(integrated_by_tissue, ndims = 100) +
   geom_vline(xintercept = c(pcs_tissue[1],30,pcs_tissue[2])) +
@@ -100,7 +100,7 @@ ElbowPlot(integrated_by_tissue, ndims = 100) +
   ylim(0,15)+
   ggtitle('dimensionality choices for integrated by tissue')
 
-ggsave(filename = 'outputs/figures/int_by_tissue_elbow.jpeg', width = 7, height = 5, units = 'in', bg='white')
+ggsave(filename = 'outputs/figures/int_by_tissue_elbow.jpeg', width = 5, height = 3.5, units = 'in', bg='white')
 
 # run clustering and vis on the various dimensionality choices
 RESULTS <-

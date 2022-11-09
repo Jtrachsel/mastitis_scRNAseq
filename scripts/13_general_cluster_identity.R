@@ -137,8 +137,7 @@ cluster_groups_from_dotplot <- function(dot_plot, cluster_column_name){
     summarise(INDEX=pct.exp * avg.exp, .groups = 'drop') %>%
     group_by(id) %>%
     summarise(dot_plot_group=feature.groups[which.max(INDEX)],
-              .groups = 'drop')# %>%
-    # mutate(!!sym(input_column_name) = id)
+              .groups = 'drop')
   result[[cluster_column_name]] <- result$id
   result <- result[,- which(colnames(result) == 'id')]
   return(result)
