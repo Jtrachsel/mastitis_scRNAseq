@@ -90,7 +90,7 @@ ElbowPlot(integrated_by_sample_ID, ndims = 100) +
   annotate(geom = 'label', x=pcs_ID[1],y=10, label=pcs_ID[1])+
   ggtitle('dimensionality choices for integrated by sample')
 
-ggsave(filename = 'outputs/figures/int_by_samp_elbow.jpeg', width = 7, height = 5, units = 'in')
+ggsave(filename = 'outputs/figures/int_by_samp_elbow.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
 ElbowPlot(integrated_by_tissue, ndims = 100) +
   geom_vline(xintercept = c(pcs_tissue[1],30,pcs_tissue[2])) +
@@ -100,7 +100,7 @@ ElbowPlot(integrated_by_tissue, ndims = 100) +
   ylim(0,15)+
   ggtitle('dimensionality choices for integrated by tissue')
 
-ggsave(filename = 'outputs/figures/int_by_tissue_elbow.jpeg', width = 7, height = 5, units = 'in')
+ggsave(filename = 'outputs/figures/int_by_tissue_elbow.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
 # run clustering and vis on the various dimensionality choices
 RESULTS <-
@@ -128,7 +128,7 @@ RESULTS %>%
   ggplot(aes(x=resolution, y=num_clusters, color=input_data)) +
   geom_point() +
   geom_line(aes(group=input_data))# +
-ggsave('outputs/figures/num_clusters_by_resolution.jpeg', width = 7, height = 5, units = 'in')
+ggsave('outputs/figures/num_clusters_by_resolution.jpeg', width = 7, height = 5, units = 'in',bg='white')
 ### USE THIS FIG ###
 
 # generate DimPlots for choices of integration and dimensionality
@@ -148,7 +148,7 @@ RESULTS %>%
   mutate(path=glue('outputs/figures/{input_data}_{type}.jpeg'),
          save_res=map2(.x=plot,
                        .y=path,
-                       .f=~ggsave(filename = .y, plot = .x, width = 9, height = 5, units = 'in')))
+                       .f=~ggsave(filename = .y, plot = .x, width = 9, height = 5, units = 'in',bg='white')))
 
 
 # using more dimensions gives more structure in the dimensionality reduction plots

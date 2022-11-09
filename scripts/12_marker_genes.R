@@ -22,7 +22,9 @@ make_feature_plots <- function(SEURAT, matched_markers,label ){
     summarise(marker_genes=list(gene_name)) %>%
     mutate(feature_plot=map(.x=marker_genes, .f=~FeaturePlot(SEURAT, features = .x)),
            plot_path=glue('outputs/figures/{label}_{type}_feature_plot.jpeg'),
-           ggsave_res=map2(.x=feature_plot, .y=plot_path, .f=~ggsave(plot = .x, filename = .y, width=9, height=7, units='in')))
+           ggsave_res=map2(.x=feature_plot,
+                           .y=plot_path,
+                           .f=~ggsave(plot = .x, filename = .y, width=9, height=7, units='in', bg='white')))
 
   return(feature_plots)
 

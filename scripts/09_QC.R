@@ -58,14 +58,14 @@ seu@meta.data %>%
   ggplot(aes(x=subsets_mitochondria_percent)) + geom_histogram(bins=50)+
   facet_wrap(~tissue+individual) + xlim(0,25) +
   geom_vline(xintercept = c(10))
-ggsave('outputs/figures/mitochondria_percent.jpeg', width = 7, height = 5, units = 'in')
+ggsave('outputs/figures/mitochondria_percent.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
 ## SHOW THIS ONE
 seu@meta.data %>%
   ggplot(aes(x=individual, y=subsets_rRNA_percent, fill=tissue)) + geom_violin() +
   ggtitle('rRNA depletion appears to have failed for one sample')
 
-ggsave('outputs/figures/rRNA_percent.jpeg', width = 7, height = 5, units = 'in')
+ggsave('outputs/figures/rRNA_percent.jpeg', width = 7, height = 5, units = 'in', bg='white')
 # num features
 seu@meta.data %>%
   ggplot(aes(x=individual, y=nFeature_originalexp, fill=tissue)) +
@@ -84,7 +84,7 @@ seu@meta.data %>%
   geom_col(position = position_dodge()) +
   facet_wrap(~individual)
 
-ggsave('outputs/figures/num_doublets.jpeg', width = 7, height = 5, units = 'in')
+ggsave('outputs/figures/num_doublets.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
 
 seu@meta.data %>%
@@ -122,7 +122,7 @@ seu@meta.data %>%
   xlim(0,8500) +
   ggtitle('Cells removed by differnt QC metrics')
 
-ggsave('outputs/figures/removed_cells.jpeg', width = 7, height = 5, units = 'in')
+ggsave('outputs/figures/removed_cells.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
 # remove bad cells
 seu_filt <- subset(seu, subset = REMOVE == 'KEEP')
