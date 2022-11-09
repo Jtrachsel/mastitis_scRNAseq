@@ -6,7 +6,7 @@ output:
     toc: true
     toc_float: true
     toc_depth: 2
-    code_folding: hide
+    code_folding: show
 ---
 
 ```{r setup, include=FALSE}
@@ -23,14 +23,14 @@ library(kableExtra)
 - Code chunks can be expanded to see the script for each step.  
 - All code is available at https://github.com/Jtrachsel/mastitis_scRNAseq  
   
+  
+  
+  
 # 01-Extract Raw data  
   
 - scripts/01_tar.slurm  
   
 ```{bash, eval=FALSE, code = readLines("scripts/01_tar.slurm")}
-
-
-
 ```
 
 # 02-Prepare reference genome  
@@ -38,8 +38,6 @@ library(kableExtra)
 - scripts/02_cellranger_reference_prep_script.slurm  
   
 ```{bash, code=readLines("scripts/02_cellranger_reference_prep_script.slurm"), eval=FALSE}
-
-
 ```
   
 # 03-FastQC  
@@ -47,7 +45,6 @@ library(kableExtra)
 - scripts/03_fastQC.slurm  
   
 ```{bash, code=readLines("scripts/03_fastQC.slurm"), eval=FALSE} 
-
 ```
 
 # 04-Cellranger  
@@ -56,8 +53,6 @@ library(kableExtra)
 - scripts/04_cellranger_map_individual.slurm    
   
 ```{bash, eval=FALSE, code=readLines("scripts/04_cellranger_map_individual.slurm")}
-
-
 ```
 
 # 05-Cellranger QC metrics {.tabset}  
@@ -155,36 +150,27 @@ summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_si
 #### post-SoupX  
 ![Post-SoupX](./outputs/figures/1634milk_post_soupX.jpeg)  
   
-## Code {.tabset}  
+## Code  
   
-### R script  
-
 ```{r, eval=FALSE, code=readLines('scripts/07_SoupX.R')}
 
 ```  
-  
-### bash script  
-
-```{r, eval=FALSE, code=readLines('scripts/07_SoupX.slurm')}
-
-```  
-  
+ 
 # 08-Doublet removal with scDblFinder  
   
 - An R script defines the scDblFinder commands to be run.  
-- A bash script defines a slurm job that runs the R script.  
 
-## Code {.tabset}  
+- Follows the introductory vignette  
+  - https://bioconductor.org/packages/devel/bioc/vignettes/scDblFinder/inst/doc/introduction.html  
+- Run using the 'multiple samples' suggestions:
+  - https://github.com/plger/scDblFinder#multiple-samples  
 
-### R script  
 
+## Code  
+  
 ```{r, code=readLines('scripts/08_scDblFinder.R'), eval=FALSE}
 ```  
   
-### bash script  
-
-```{bash, code=readLines('scripts/08_scDblFinder.slurm'), eval=FALSE}
-```
   
 # 09-QC and cell removal {.tabset}  
 
