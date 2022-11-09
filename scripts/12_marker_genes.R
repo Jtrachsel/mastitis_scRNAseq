@@ -13,36 +13,32 @@ library(glue)
 # finally runs FindALlMarkers() and outputs a tsv with each cluster's positive marker genes.
 
 
-
+# makes 'feature' plots using specified markers
 make_feature_plots <- function(SEURAT, matched_markers,label ){
   # browser()
-  feature_plots <- 
+  feature_plots <-
     matched_markers %>%
-    group_by(type) %>% 
-    summarise(marker_genes=list(gene_name)) %>% 
-    mutate(feature_plot=map(.x=marker_genes, .f=~FeaturePlot(SEURAT, features = .x)), 
-           plot_path=glue('outputs/figures/{label}_{type}_feature_plot.jpeg'), 
+    group_by(type) %>%
+    summarise(marker_genes=list(gene_name)) %>%
+    mutate(feature_plot=map(.x=marker_genes, .f=~FeaturePlot(SEURAT, features = .x)),
+           plot_path=glue('outputs/figures/{label}_{type}_feature_plot.jpeg'),
            ggsave_res=map2(.x=feature_plot, .y=plot_path, .f=~ggsave(plot = .x, filename = .y, width=9, height=7, units='in')))
-  
+
   return(feature_plots)
-  
+
 }
 
+# runs FindAllMarkers and outputs a tsv
 get_cluster_markers <- function(SEURAT, label){
-  
+
   output_name <- glue('outputs/{label}_markers.tsv')
-  
+
   Idents(SEURAT) <- 'integrated_snn_res.0.5'
   FOUND_MARKERS <- FindAllMarkers(SEURAT, assay = 'originalexp',only.pos = TRUE )
   FOUND_MARKERS %>% write_tsv(output_name)
   return(FOUND_MARKERS)
-  
+
 }
-
-
-# right now this is integrated by sampleID with 86 dimensions used for clustering
-# All.integrated <- LoadH5Seurat('outputs/All.integrated.h5seurat')
-
 
 
 # read in 2 seurat objects under consideration
@@ -50,46 +46,31 @@ All.integrated_30 <- LoadH5Seurat('outputs/All.integrated_30.h5seurat')
 All.integrated_86 <- LoadH5Seurat('outputs/All.integrated_86.h5seurat')
 
 
-##
-#All.integrated_30[['integrated']] <- NULL
-#All.integrated_30[['SCT']] <- NULL
-
-#SaveH5Seurat(All.integrated_30, filename = 'outputs/All.integrated_30', overwrite = T)
-
-
-#All.integrated_86[['integrated']] <- NULL
-#All.integrated_86[['SCT']] <- NULL
-
-# SaveH5Seurat(All.integrated_86, filename = 'outputs/All.integrated_86', overwrite = T)
-##
-
 # USE MARKER GENES FROM TABLE
-DOT_PLOT <- read_csv('raw_data/dot_plot_markers.csv') 
+DOT_PLOT <- read_csv('raw_data/dot_plot_markers.csv')
 
 # read in markers and also removes '/' and ' ' characters from the type column
-MARKERS <- read_tsv('outputs/marker_genes_long.tsv') %>% 
+MARKERS <- read_tsv('outputs/marker_genes_long.tsv') %>%
   mutate(type=sub('[/ ]','_',type))
 
 # check the seurat object to see which marker genes are present
 # amatch uses aproximate grep to see if typos were responsible for not matching
-MARKERS <- 
+MARKERS <-
   MARKERS %>%
-  mutate(amatches=map(.x=gene_name, .f=~agrep(.x, rownames(All.integrated_30), value = T)), 
+  mutate(amatches=map(.x=gene_name, .f=~agrep(.x, rownames(All.integrated_30), value = T)),
          matches=map(.x=paste0('^',gene_name, '$'), .f=~grep(.x, rownames(All.integrated_30), value = T)))
 
-MARKERS_dot <- 
+# matches genes specified in the 'dot plot' table
+MARKERS_dot <-
   DOT_PLOT %>%
-  mutate(amatches=map(.x=gene_name, .f=~agrep(.x, rownames(All.integrated_30), value = T)), 
+  mutate(amatches=map(.x=gene_name, .f=~agrep(.x, rownames(All.integrated_30), value = T)),
          matches=map(.x=paste0('^',gene_name, '$'), .f=~grep(.x, rownames(All.integrated_30), value = T)))
 
-
-UN_matched_markers <- 
-  MARKERS %>% 
+# these requested markers were not matched
+UN_matched_markers <-
+  MARKERS %>%
   filter(map_lgl(.x=matches, .f=~identical(.x, character(0)) ))
 
-# Here? #
-
-# grep('BOLA', rownames(All.integrated), value=T)
 
 # PAX5 == ENSBTAG00000012498
 # cd16 synonym
@@ -99,16 +80,16 @@ UN_matched_markers <-
 # glut1 = SLC2A1
 # SELL, CD62L, LAM1, LECAM1, LEU8, LNHR, LSEL, LYAM1, PLNHR, TQ1, selectin L
 
-matched_markers <- 
-  MARKERS %>% 
-  filter(!map_lgl(.x=matches, .f=~identical(.x, character(0)) )) %>% 
+matched_markers <-
+  MARKERS %>%
+  filter(!map_lgl(.x=matches, .f=~identical(.x, character(0)) )) %>%
   select(-amatches, -matches)
 
 #
-feature_plots <- 
+feature_plots <-
   matched_markers %>%
-  group_by(type) %>% 
-  summarise(marker_genes=list(gene_name)) %>% 
+  group_by(type) %>%
+  summarise(marker_genes=list(gene_name)) %>%
   mutate(feature_plot=map(.x=marker_genes, .f=~FeaturePlot(All.integrated_30, features = .x)))
 
 
@@ -145,32 +126,29 @@ feature_plots$feature_plot[[5]]
 # T cell markers
 feature_plots$feature_plot[[6]]
 # all good
-# matched_markers$type %>% unique()
 
-matched_markers_filt <- 
+# removes non-informative markers
+matched_markers_filt <-
   matched_markers %>%
-  filter(!(gene_name %in% c('XBP1', 'PRDM1') & type == 'B_ASC')) %>% 
-  filter(type != 'Others') %>% 
-  filter(!(type == 'neutrophil' & gene_name %in% c('MPO', 'FCGR1A'))) %>% 
-  filter(!(type == 'myeloid' & gene_name %in% c('CD93', 'FLT3'))) %>% 
+  filter(!(gene_name %in% c('XBP1', 'PRDM1') & type == 'B_ASC')) %>%
+  filter(type != 'Others') %>%
+  filter(!(type == 'neutrophil' & gene_name %in% c('MPO', 'FCGR1A'))) %>%
+  filter(!(type == 'myeloid' & gene_name %in% c('CD93', 'FLT3'))) %>%
   filter(!(type == 'monocyte' & gene_name %in% c('CCR2')))
 
 
 matched_markers_filt %>% write_tsv('outputs/matched_markers_filt.tsv')
 
-
-
-
-##
+# pub for some marker genes
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5742132/
 
-number_cells_expressing_markers <- 
+number_cells_expressing_markers <-
   tibble(gene_name=names(rowSums(All.integrated_30[matched_markers_filt$gene_name,]@assays$originalexp@counts > 0)),
          num_positive=rowSums(All.integrated_30[matched_markers_filt$gene_name,]@assays$originalexp@counts > 0))
 
 ## make a kable table from this
-number_cells_expressing_markers %>% 
-  arrange((num_positive)) %>% 
+number_cells_expressing_markers %>%
+  arrange((num_positive)) %>%
   write_tsv('outputs/num_cells_expressing_markers.tsv')
 
 # THIS IS TCRD
@@ -178,12 +156,6 @@ number_cells_expressing_markers %>%
 
 
 ### find all positive markers for each cluster at coarsest resolution
-# Idents(All.integrated) <- 'integrated_snn_res.0.5'
-
-# FOUND_MARKERS <- FindAllMarkers(All.integrated, assay = 'originalexp',only.pos = TRUE )
-
-# FOUND_MARKERS %>% write_tsv('outputs/FOUND_MARKERS.tsv')
-
 feature_plots_30 <- make_feature_plots(SEURAT = All.integrated_30, matched_markers = matched_markers_filt, label = '30')
 feature_plots_86 <- make_feature_plots(SEURAT = All.integrated_86, matched_markers = matched_markers_filt, label = '86')
 

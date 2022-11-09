@@ -12,12 +12,11 @@ if (future::supportsMulticore()){
 
 options(future.globals.maxSize = 200000 * 1024^2)
 
-## functions 
-
+## functions
 
 # this was taken from one of Jayne's script, 2 methods to determine
 # an appropriate number of dimensions to use in clustering and visualization
-determine_dimensionality <- 
+determine_dimensionality <-
   function(seurat_object){
     pct <- seurat_object[["pca"]]@stdev / sum(seurat_object[["pca"]]@stdev) * 100 # find standard deviation for each PC
     cumu <- cumsum(pct) # find cumulative percentages for PCs
@@ -26,7 +25,7 @@ determine_dimensionality <-
     co2 <- sort(which((pct[1:length(pct) - 1] - pct[2:length(pct)]) > 0.1), decreasing = T)[1] + 1 # find last PC where change in percent variation is more than 0.1%
     co2 # list PC
     pcs <- c(co1, co2)
-    return(pcs) 
+    return(pcs)
   }
 
 # runs clustering and visualization with the specified number of dimensions
@@ -35,25 +34,25 @@ run_cluster_viz <- function(seurat_obj, PCdims){
   seurat_obj <- RunUMAP(seurat_obj, reduction = "pca", dims = PCdims)
   seurat_obj <- FindNeighbors(seurat_obj, reduction = "pca", dims = PCdims)
   seurat_obj <- FindClusters(seurat_obj,
-                             resolution = c(.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5), 
-                             verbose = FALSE) 
+                             resolution = c(.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5),
+                             verbose = FALSE)
   return(seurat_obj)
 }
 
 # for a given resolution, returns the number of clusters present
 # used to investigate different clustering results
-num_clusters_by_resolution <- 
+num_clusters_by_resolution <-
   function(seurat_object){
-    seurat_object@meta.data %>% 
-      select(starts_with('integrated')) %>% 
-      rownames_to_column(var='cell_id') %>% 
-      as_tibble() %>% 
+    seurat_object@meta.data %>%
+      select(starts_with('integrated')) %>%
+      rownames_to_column(var='cell_id') %>%
+      as_tibble() %>%
       pivot_longer(-cell_id,
-                   names_to = 'resolution', 
-                   values_to = 'cluster', 
-                   names_prefix = 'integrated_snn_res.') %>% 
-      group_by(resolution) %>% 
-      summarise(num_clusters=length(unique(cluster)))  
+                   names_to = 'resolution',
+                   values_to = 'cluster',
+                   names_prefix = 'integrated_snn_res.') %>%
+      group_by(resolution) %>%
+      summarise(num_clusters=length(unique(cluster)))
   }
 
 
@@ -63,7 +62,6 @@ library(SeuratDisk)
 ## two different seurat objects, one integrated by sample, one integrated by tissue
 # I think integrated by sample_ID is probably the way to go
 integrated_by_sample_ID <- LoadH5Seurat('outputs/split_by_sample_ID.h5seurat')
-#read_rds('outputs/split_by_sample_ID.rds')
 integrated_by_tissue <- LoadH5Seurat('outputs/split_by_tissue.h5seurat')
 
 #
@@ -85,7 +83,7 @@ pcs_tissue <- determine_dimensionality(integrated_by_tissue)
 # look at various cutoffs on the elbow plots
 
 ElbowPlot(integrated_by_sample_ID, ndims = 100) +
-  geom_vline(xintercept = c(pcs_ID[1],30,pcs_ID[2])) + 
+  geom_vline(xintercept = c(pcs_ID[1],30,pcs_ID[2])) +
   ylim(0,15)+
   annotate(geom = 'label', x=pcs_ID[2],y=10, label=pcs_ID[2])+
   annotate(geom = 'label', x=30,y=10, label=30)+
@@ -105,8 +103,8 @@ ElbowPlot(integrated_by_tissue, ndims = 100) +
 ggsave(filename = 'outputs/figures/int_by_tissue_elbow.jpeg', width = 7, height = 5, units = 'in')
 
 # run clustering and vis on the various dimensionality choices
-RESULTS <- 
-  tribble(~input_data, ~seurat_objects, 
+RESULTS <-
+  tribble(~input_data, ~seurat_objects,
         glue('integrated_by_sample_ID_{pcs_ID[1]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_ID[1]),
         glue('integrated_by_sample_ID_{pcs_ID[2]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_ID[2]),
         glue('integrated_by_tissue_{pcs_tissue[1]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_tissue[1]),
@@ -117,16 +115,16 @@ RESULTS <-
 
 # make some plots describing the number of clusters with different methods
 #HERE
-RESULTS <- 
-  RESULTS %>% 
+RESULTS <-
+  RESULTS %>%
   mutate(num_clusts_dat=map(seurat_objects, ~num_clusters_by_resolution(.x)))
 
 # plot the number of clusters formed with the different integration and
 # dimensionality choices
 
-RESULTS %>% 
-  select(-seurat_objects) %>% 
-  unnest(num_clusts_dat) %>% 
+RESULTS %>%
+  select(-seurat_objects) %>%
+  unnest(num_clusts_dat) %>%
   ggplot(aes(x=resolution, y=num_clusters, color=input_data)) +
   geom_point() +
   geom_line(aes(group=input_data))# +
@@ -134,20 +132,20 @@ ggsave('outputs/figures/num_clusters_by_resolution.jpeg', width = 7, height = 5,
 ### USE THIS FIG ###
 
 # generate DimPlots for choices of integration and dimensionality
-RESULTS <- 
+RESULTS <-
   RESULTS %>%
-  mutate(dimplots_clusters=map(.x=seurat_objects, 
-                      .f=~(DimPlot(.x, reduction='umap',group.by = 'integrated_snn_res.0.5', split.by = 'tissue'))), 
-         dimplots_individual=map(.x=seurat_objects, 
+  mutate(dimplots_clusters=map(.x=seurat_objects,
+                      .f=~(DimPlot(.x, reduction='umap',group.by = 'integrated_snn_res.0.5', split.by = 'tissue'))),
+         dimplots_individual=map(.x=seurat_objects,
                       .f=~(DimPlot(.x, reduction='umap',group.by = 'individual', split.by = 'tissue'))))
 
 usethis::use_directory('outputs/figures')
 
 # save figures
-RESULTS %>% 
-  select('input_data', 'dimplots_clusters', 'dimplots_individual') %>% 
-  pivot_longer(-'input_data',names_to = 'type', values_to = 'plot' ) %>% 
-  mutate(path=glue('outputs/figures/{input_data}_{type}.jpeg'), 
+RESULTS %>%
+  select('input_data', 'dimplots_clusters', 'dimplots_individual') %>%
+  pivot_longer(-'input_data',names_to = 'type', values_to = 'plot' ) %>%
+  mutate(path=glue('outputs/figures/{input_data}_{type}.jpeg'),
          save_res=map2(.x=plot,
                        .y=path,
                        .f=~ggsave(filename = .y, plot = .x, width = 9, height = 5, units = 'in')))
@@ -163,15 +161,14 @@ DefaultAssay(All.integrated) <- "originalexp"
 All.integrated[['SCT']] <- NULL
 
 
-All.integrated <- NormalizeData(All.integrated,  
-                                normalization.method = "LogNormalize", 
-                                scale.factor = 10000, 
+All.integrated <- NormalizeData(All.integrated,
+                                normalization.method = "LogNormalize",
+                                scale.factor = 10000,
                                 assay = "originalexp")
 
-All.integrated <- ScaleData(All.integrated, 
+All.integrated <- ScaleData(All.integrated,
                             assay = "originalexp")
 
-# any(All.integrated@assays$originalexp@counts < 0)
 
 SaveH5Seurat(All.integrated, filename = 'outputs/All.integrated_86', overwrite = TRUE)
 
@@ -185,17 +182,14 @@ All.integrated[['SCT']] <- NULL
 
 DefaultAssay(All.integrated) <- "originalexp"
 
-All.integrated <- NormalizeData(All.integrated,  
-                                normalization.method = "LogNormalize", 
-                                scale.factor = 10000, 
+All.integrated <- NormalizeData(All.integrated,
+                                normalization.method = "LogNormalize",
+                                scale.factor = 10000,
                                 assay = "originalexp")
 
-All.integrated <- ScaleData(All.integrated, 
+All.integrated <- ScaleData(All.integrated,
                             assay = "originalexp")
-
-# any(All.integrated@assays$originalexp@counts < 0)
 
 SaveH5Seurat(All.integrated, filename = 'outputs/All.integrated_30', overwrite=TRUE)
 
-All.integrated
 
