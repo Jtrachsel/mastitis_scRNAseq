@@ -189,13 +189,19 @@ summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_si
 
 ## Figures  
   
+### rRNA depletion issues  
+  
 ![rRNA](./outputs/figures/rRNA_percent.jpeg)  
   
-  
+### Cutoff for percent mitochondrial reads  
+
 ![mito](./outputs/figures/mitochondria_percent.jpeg)  
+  
+### Doublets  
   
 ![doublets](./outputs/figures/num_doublets.jpeg)  
   
+### NUmber of cells removed    
   
 ![removed cells](./outputs/figures/removed_cells.jpeg)  
   
@@ -234,13 +240,23 @@ summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_si
   - **Integrate by Sample_ID**  
   - **dimensionality = 30**  
   
+- Some arguments for using more dimensions / PCs  
+  - from: https://satijalab.org/seurat/articles/sctransform_vignette.html  
+  
+> Why can we choose more PCs when using sctransform?
+In the standard Seurat workflow we focus on 10 PCs for this dataset, though we highlight that the results are similar with higher settings for this parameter. Interestingly, we’ve found that when using sctransform, we often benefit by pushing this parameter even higher. We believe this is because the sctransform workflow performs more effective normalization, strongly removing technical effects from the data.  
+
+  
   
 ## Figures  
 
 
-elbow plots  
+### Elbow plots  
 ![](./outputs/figures/int_by_samp_elbow.jpeg)  
 ![](./outputs/figures/int_by_tissue_elbow.jpeg)  
+  
+### Dim plots at different dimensionality choices    
+  
 ```{r, results='asis', echo=FALSE}
 files <- list.files(path = "outputs/figures", pattern = ".*sample_ID_.*_clusters.jpeg", full.names = TRUE)
 for (f in files) {
@@ -248,7 +264,10 @@ for (f in files) {
   }
 ```
   
-num_clusters by resolution
+### Number of clusters by resolution  
+
+- Interesting that high dimensionality (86) results in fewer clusters at high resolution  
+
 ![](./outputs/figures/num_clusters_by_resolution.jpeg)
   
   
@@ -270,7 +289,7 @@ num_clusters by resolution
   
 # 13-Assign General Cluster Identities {.tabset}  
   
-- uses marker gene expression to assign cell clusters very broad types  
+- Uses marker gene expression to assign cell clusters very broad types  
   - T cell  
   - B cell  
   - Myeloid  
@@ -283,12 +302,7 @@ num_clusters by resolution
 ![](./outputs/figures/grouped_dot_plot.jpeg)  
 ![](./outputs/figures/dim_plot_dot_plot_group.jpeg)    
   
-![](./outputs/figures/dim_plot_manual_ID_coarse.jpeg)  
 
-![](./outputs/figures/dim_plot_manual_ID.jpeg)  
-  
-  
-  
 
 ### marker feature plots  
   
