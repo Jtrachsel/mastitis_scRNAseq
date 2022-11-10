@@ -6,7 +6,7 @@ library(scater)
 
 # read in the single cell experiment object output by scDblFinder
 scDbl_out <- read_rds('outputs/scDblFinder_out.rds')
-colnames(scDbl_out)
+# colnames(scDbl_out)
 
 # all detected genes and some data about them
 GENE_IDS <- read_tsv('outputs/gene_ID_mapping.tsv')
@@ -134,7 +134,7 @@ seu_filt <- subset(seu_filt, features=non_zero_Features)
 
 
 # write out seurat object
-seu_filt <- SeuratDisk::SaveH5Seurat(seu_filt, 'outputs/seurat_QC_done')
+seu_filt <- SeuratDisk::SaveH5Seurat(seu_filt, 'outputs/seurat_QC_done', overwrite = TRUE)
 
 
 

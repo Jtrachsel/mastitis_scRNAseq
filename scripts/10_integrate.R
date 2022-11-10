@@ -3,6 +3,9 @@ library(tidyverse)
 library(future)
 library(SeuratDisk)
 
+
+set.seed(4)
+
 # setup plan for mulitprocessing
 if (future::supportsMulticore()){
   future::plan(multicore, workers=4)
@@ -75,7 +78,9 @@ RUN_integration <- function(SPLIT_BY, SEURAT){
 
 ## run integration splitting by sample_ID
 sample_ID_integration <- RUN_integration(SPLIT_BY = 'sample_ID', SEURAT = seu_filt)
-
+# remove SCT assay because we dont need it after integration
+sample_ID_integration[['SCT']] <- NULL
+DefaultAssay(sample_ID_integration) <- "integrated"
 SeuratDisk::SaveH5Seurat(sample_ID_integration, 'outputs/split_by_sample_ID', overwrite = T)
 
 
@@ -85,7 +90,9 @@ gc()
 
 ## run integration splitting by tissue
 tissue_integration <- RUN_integration(SPLIT_BY = 'tissue', SEURAT = seu_filt)
-
+# remove SCT assay because we dont need it after integration
+tissue_integration[['SCT']] <- NULL
+DefaultAssay(tissue_integration) <- "integrated"
 SeuratDisk::SaveH5Seurat(tissue_integration, 'outputs/split_by_tissue', overwrite = T)
 
 

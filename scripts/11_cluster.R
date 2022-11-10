@@ -3,6 +3,7 @@ library(Seurat)
 library(future)
 library(glue)
 
+set.seed(4)
 
 if (future::supportsMulticore()){
   future::plan(multicore, workers=4)
@@ -88,7 +89,7 @@ ElbowPlot(integrated_by_sample_ID, ndims = 100) +
   annotate(geom = 'label', x=pcs_ID[2],y=10, label=pcs_ID[2])+
   annotate(geom = 'label', x=30,y=10, label=30)+
   annotate(geom = 'label', x=pcs_ID[1],y=10, label=pcs_ID[1])+
-  ggtitle('dimensionality choices for integrated by sample')
+  ggtitle('elbow plot - integrated by sample')
 
 ggsave(filename = 'outputs/figures/int_by_samp_elbow.jpeg', width = 5, height = 3.5, units = 'in', bg='white')
 
@@ -98,7 +99,7 @@ ElbowPlot(integrated_by_tissue, ndims = 100) +
   annotate(geom = 'label', x=30,y=10, label=30)+
   annotate(geom = 'label', x=pcs_tissue[1],y=10, label=pcs_tissue[1])+
   ylim(0,15)+
-  ggtitle('dimensionality choices for integrated by tissue')
+  ggtitle('elbow plot - integrated by tissue')
 
 ggsave(filename = 'outputs/figures/int_by_tissue_elbow.jpeg', width = 5, height = 3.5, units = 'in', bg='white')
 
@@ -127,7 +128,8 @@ RESULTS %>%
   unnest(num_clusts_dat) %>%
   ggplot(aes(x=resolution, y=num_clusters, color=input_data)) +
   geom_point() +
-  geom_line(aes(group=input_data))# +
+  geom_line(aes(group=input_data)) +
+  ggtitle('number of clusters at different resolutions')
 ggsave('outputs/figures/num_clusters_by_resolution.jpeg', width = 7, height = 5, units = 'in',bg='white')
 ### USE THIS FIG ###
 
@@ -158,7 +160,7 @@ DefaultAssay(All.integrated) <- "originalexp"
 
 # integrated has the dim reductions, so cant remove?
 # All.integrated[['integrated']] <- NULL
-All.integrated[['SCT']] <- NULL
+# All.integrated[['SCT']] <- NULL
 
 
 All.integrated <- NormalizeData(All.integrated,
@@ -178,7 +180,7 @@ All.integrated <- RESULTS$seurat_objects[[5]]
 
 # integrated has the dim reductions so cant remove?
 # All.integrated[['integrated']] <- NULL
-All.integrated[['SCT']] <- NULL
+# All.integrated[['SCT']] <- NULL
 
 DefaultAssay(All.integrated) <- "originalexp"
 

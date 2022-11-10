@@ -14,7 +14,7 @@ SCE <- Read10X(sample_dirs)
 ID_map <- cbind(read_tsv('outputs/gene_ID_mapping.tsv'),
                 tibble(ROWNAMES=rownames(SCE)))
 
-ID_map %>% filter(name != ROWNAMES)%>% select(name, ROWNAMES)
+# ID_map %>% filter(name != ROWNAMES)%>% select(name, ROWNAMES)
 
 write_tsv(ID_map, 'outputs/gene_ID_mapping.tsv')
 

@@ -122,8 +122,6 @@ pdot <-
 pdot
 ggsave('outputs/figures/grouped_dot_plot.jpeg', height=6, width = 11, units = 'in', bg='white')
 
-pdot$data
-
 # this function takes:
 # 1) a dot plot object that was generated with a named list of feature vectors
 #   - the names of the list define the group names,
@@ -147,25 +145,25 @@ cluster_groups_from_dotplot <- function(dot_plot, cluster_column_name){
 dot_plot_assignments <-
   cluster_groups_from_dotplot(pdot, cluster_column_name = 'integrated_snn_res.0.5')
 
-
+# best to let the immunologists do the manual IDs...
 cluster_identities <-
   cluster_identities %>%
-  mutate(manual_ID = case_when(
-    integrated_snn_res.0.5  == 4 ~ paste0('B_',integrated_snn_res.0.5),
-    integrated_snn_res.0.5  == 18 ~ paste0('GD_T_',integrated_snn_res.0.5),
-    integrated_snn_res.0.5  == 14 ~ paste0('GD_T_',integrated_snn_res.0.5),
-    integrated_snn_res.0.5  == 2 ~ paste0('CD4_T_',integrated_snn_res.0.5),
-    integrated_snn_res.0.5  == 11 ~ paste0('CD8_T_',integrated_snn_res.0.5),
-    TRUE ~ paste0(max_ident,'_',integrated_snn_res.0.5),
-  )) %>%
-  mutate(manual_ID_coarse = case_when(
-    integrated_snn_res.0.5  == 4 ~ paste0('B_',integrated_snn_res.0.5),
-    integrated_snn_res.0.5  == 18 ~ paste0('GD_T_',integrated_snn_res.0.5),
-    integrated_snn_res.0.5  == 14 ~ paste0('GD_T_',integrated_snn_res.0.5),
-    integrated_snn_res.0.5  == 2 ~ paste0('CD4_T_',integrated_snn_res.0.5),
-    integrated_snn_res.0.5  == 11 ~ paste0('CD8_T_',integrated_snn_res.0.5),
-    TRUE ~ max_ident,
-  )) %>%
+  # mutate(manual_ID = case_when(
+  #   integrated_snn_res.0.5  == 2 ~ paste0('B_',integrated_snn_res.0.5),
+  #   integrated_snn_res.0.5  == 14 ~ paste0('GD_T_',integrated_snn_res.0.5),
+  #   integrated_snn_res.0.5  == 14 ~ paste0('GD_T_',integrated_snn_res.0.5),
+  #   integrated_snn_res.0.5  == 4 ~ paste0('CD4_T_',integrated_snn_res.0.5),
+  #   integrated_snn_res.0.5  == 11 ~ paste0('CD8_T_',integrated_snn_res.0.5),
+  #   TRUE ~ paste0(max_ident,'_',integrated_snn_res.0.5),
+  # )) %>%
+  # mutate(manual_ID_coarse = case_when(
+  #   integrated_snn_res.0.5  == 4 ~ paste0('B_',integrated_snn_res.0.5),
+  #   integrated_snn_res.0.5  == 18 ~ paste0('GD_T_',integrated_snn_res.0.5),
+  #   integrated_snn_res.0.5  == 14 ~ paste0('GD_T_',integrated_snn_res.0.5),
+  #   integrated_snn_res.0.5  == 2 ~ paste0('CD4_T_',integrated_snn_res.0.5),
+  #   integrated_snn_res.0.5  == 11 ~ paste0('CD8_T_',integrated_snn_res.0.5),
+  #   TRUE ~ max_ident,
+  # )) %>%
   left_join(dot_plot_assignments)
 
 # 2 == B cells
@@ -190,13 +188,13 @@ All.integrated@meta.data <-
 
 
 # THIS ONE
-DimPlot(All.integrated, group.by = 'manual_ID', split.by = 'tissue',label = T)
-ggsave('outputs/figures/dim_plot_manual_ID.jpeg', width = 7, height = 5, units = 'in', bg='white')
+# DimPlot(All.integrated, group.by = 'manual_ID', split.by = 'tissue',label = T, label.size = 3)
+# ggsave('outputs/figures/dim_plot_manual_ID.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
 # THIS ONE
-DimPlot(All.integrated, group.by = 'manual_ID_coarse', split.by = 'tissue',label = T) +
-  theme(panel.border = element_rect(fill=NA, color='black'))
-ggsave('outputs/figures/dim_plot_manual_ID_coarse.jpeg', width = 7, height = 5, units = 'in', bg='white')
+# DimPlot(All.integrated, group.by = 'manual_ID_coarse', split.by = 'tissue',label = T, label.size = 3) +
+  # theme(panel.border = element_rect(fill=NA, color='black'))
+# ggsave('outputs/figures/dim_plot_manual_ID_coarse.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
 DimPlot(All.integrated, group.by = 'dot_plot_group', split.by = 'tissue',label = TRUE) +
   theme(panel.border = element_rect(fill=NA, color='black'))
@@ -211,16 +209,16 @@ ggsave('outputs/figures/dim_plot_dot_plot_group.jpeg', width = 7, height = 5, un
 
 # these are cells in the lower right corner where the B cells are
 # some weird myeloid classified clusters
-UMAP_COORDS <-
-  All.integrated@reductions$umap@cell.embeddings %>%
-  as.data.frame() %>%
-  rownames_to_column(var = 'CELL')
-
-All.integrated@meta.data %>%
-  rownames_to_column(var = 'CELL') %>%
-  left_join(UMAP_COORDS) %>%
-  filter(UMAP_1 >4 & UMAP_2 < -5) %>%
-  group_by(all_ident, manual_ID) %>%
-  tally()
+# UMAP_COORDS <-
+#   All.integrated@reductions$umap@cell.embeddings %>%
+#   as.data.frame() %>%
+#   rownames_to_column(var = 'CELL')
+# 
+# All.integrated@meta.data %>%
+#   rownames_to_column(var = 'CELL') %>%
+#   left_join(UMAP_COORDS) %>%
+#   filter(UMAP_1 >4 & UMAP_2 < -5) %>%
+#   group_by(all_ident, manual_ID) %>%
+#   tally()
 
 SaveH5Seurat(All.integrated, 'outputs/classified_clusters_30', overwrite=TRUE)
