@@ -2,6 +2,16 @@ library(tidyverse)
 library(Seurat)
 library(SeuratDisk)
 library(glue)
+library(future)
+
+
+if (future::supportsMulticore()){
+  future::plan(multicore, workers=4)
+} else {
+  future::plan(multisession, workers=4)
+}
+
+options(future.globals.maxSize = 200000 * 1024^2)
 
 
 # This script takes pre-identified marker genes and matches them to the

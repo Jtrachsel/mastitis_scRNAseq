@@ -1,0 +1,13 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+SoupX
+Bos_taurus*
+cellranger_out
+fastqc_results
+logs
+raw_data/lane*
+raw_data/4*
+reference_sources
+

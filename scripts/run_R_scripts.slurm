@@ -21,7 +21,7 @@ module load singularity
 # and that the renv project's auto-loader is active.
 # You can set up the auto-loader by calling renv::activate() from R in that project.
 
-# I did this prior to running this script.  Maybe I should include a 'setup' script.  
+# I did this prior to running this script.  Maybe I should include a 'setup' script.
 
 #
 # I developed these scripts using RStudio via open on demand on Ceres
@@ -35,17 +35,23 @@ module load singularity
 #singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/07_SoupX.R
 #singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/08_scDblFinder.R
 
-echo 09_QC.R
-singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/09_QC.R
+# this takes ~ 1 min
+#date
+#echo 09_QC.R
+#singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/09_QC.R
 
-echo 10_integrate.R
-singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/10_integrate.R
+#date
+#echo 10_integrate.R
+#singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/10_integrate.R
 
-echo 11_cluster.R
-singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/11_cluster.R
+#date
+#echo 11_cluster.R
+#singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/11_cluster.R
 
+date
 echo 12_marker_genes.R
 singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/12_marker_genes.R
 
+date
 echo 13_general_cluster_identity.R
 singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/13_general_cluster_identity.R

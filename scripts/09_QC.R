@@ -120,7 +120,7 @@ seu@meta.data %>%
   xlab('number of cells') +
   theme(legend.position = 'none') +
   xlim(0,8500) +
-  ggtitle('Cells removed by differnt QC metrics')
+  ggtitle('Cells removed by different QC metrics')
 
 ggsave('outputs/figures/removed_cells.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
