@@ -2,6 +2,8 @@ library(tidyverse)
 library(Seurat)
 library(future)
 library(glue)
+library(SeuratDisk)
+
 
 set.seed(4)
 
@@ -17,6 +19,7 @@ options(future.globals.maxSize = 200000 * 1024^2)
 
 # this was taken from one of Jayne's script, 2 methods to determine
 # an appropriate number of dimensions to use in clustering and visualization
+# returns an integer vector of length 2 that contains the results from the two methods
 determine_dimensionality <-
   function(seurat_object){
     pct <- seurat_object[["pca"]]@stdev / sum(seurat_object[["pca"]]@stdev) * 100 # find standard deviation for each PC
@@ -57,7 +60,6 @@ num_clusters_by_resolution <-
   }
 
 
-library(SeuratDisk)
 #
 
 ## two different seurat objects, one integrated by sample, one integrated by tissue
@@ -134,12 +136,15 @@ ggsave('outputs/figures/num_clusters_by_resolution.jpeg', width = 7, height = 5,
 ### USE THIS FIG ###
 
 # generate DimPlots for choices of integration and dimensionality
+
 RESULTS <-
   RESULTS %>%
-  mutate(dimplots_clusters=map(.x=seurat_objects,
-                      .f=~(DimPlot(.x, reduction='umap',group.by = 'integrated_snn_res.0.5', split.by = 'tissue'))),
-         dimplots_individual=map(.x=seurat_objects,
-                      .f=~(DimPlot(.x, reduction='umap',group.by = 'individual', split.by = 'tissue'))))
+  mutate(dimplots_clusters=map2(.x=seurat_objects, .y=input_data,
+                      .f=~(DimPlot(.x, reduction='umap',group.by = 'integrated_snn_res.0.5', split.by = 'tissue') +
+                             ggtitle(.y))),
+         dimplots_individual=map2(.x=seurat_objects,.y=input_data,
+                      .f=~(DimPlot(.x, reduction='umap',group.by = 'individual', split.by = 'tissue') +
+                             ggtitle(.y))))
 
 usethis::use_directory('outputs/figures')
 

@@ -19,17 +19,19 @@ module load parallel
 # stage project on 90daydata partition
 
 mkdir -p logs
-mkdir -p /90daydata/fsep_004/john_lippolis_milk_blood/
-cp -r -n * /90daydata/fsep_004/john_lippolis_milk_blood/
+# mkdir -p /90daydata/fsep_004/john_lippolis_milk_blood/
+# cp -r -n * /90daydata/fsep_004/john_lippolis_milk_blood/
 
-cd /90daydata/fsep_004/john_lippolis_milk_blood/
+# cd /90daydata/fsep_004/john_lippolis_milk_blood/
 
+
+# if the tar archive doesnt appear to have been extracted...
 # untar the archive
-
 if [ ! -d ./raw_data/lane4/ ]; then
 
 	tar -xvf "./raw_data/4,5,6_31025_01_1312milk_H7LMV_1705.tar" -C ./raw_data/
-
+  
+  # decompress the fastqs
 	parallel 'gunzip {}' ::: ./raw_data/lane4/*gz
 	parallel 'gunzip {}' ::: ./raw_data/lane5/*gz
 	parallel 'gunzip {}' ::: ./raw_data/lane6/*gz
@@ -38,7 +40,11 @@ fi
 
 # generate a list of sample names from the fastqs
 mkdir -p outputs
-for x in raw_data/lane4/*R1*; do y=$(basename $x); echo "${y%_S*}"; done | grep -v Undetermined > outputs/sample_names.txt
+for x in raw_data/lane4/*R1*
+do
+  y=$(basename $x)
+  echo "${y%_S*}"
+done | grep -v Undetermined > outputs/sample_names.txt
 
 # extract some metadata from the sample names
 sed -E 's/([0-9]+)([a-z]+)-([0-9]+)/&\t\1\t\2\t\3/g' outputs/sample_names.txt > outputs/metadata.tsv

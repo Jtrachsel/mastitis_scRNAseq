@@ -81,5 +81,5 @@ cellranger mkref --genome=Bos_taurus.ARS-UCD1.2 \
 
 
 
-#sbatch scripts/03_fastQC.slurm
+sbatch scripts/03_fastQC.slurm
 

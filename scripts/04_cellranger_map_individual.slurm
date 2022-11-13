@@ -14,7 +14,7 @@
 
 set -e
 mkdir -p cellranger_out
-mkdir -p cellranger_out_10000
+# mkdir -p cellranger_out_10000
 
 # this should create an array of jobs that performs all 6 individual mappings
 
@@ -53,3 +53,8 @@ mv "$SAMPLE_ID"/ ./cellranger_out/
 # mv "$SAMPLE_ID"/ ./cellranger_out_10000/
 
 #####
+
+
+# start the R scripts
+#sbatch scripts/run_R_scripts.slurm
+

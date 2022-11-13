@@ -25,7 +25,7 @@ FOUND_MARKERS %>%
   ggplot(aes(x=factor(cluster, levels = c(0:20)),y=n, fill=type)) +
   geom_col(color='black')
 
-
+# make dot plots from this?
 top5_markers <-
   FOUND_MARKERS %>%
   group_by(cluster) %>%
@@ -88,6 +88,10 @@ NDOTS1 <-
   ungroup()
 
 NDOT_LIST <- setNames(as.list(NDOTS1$data), NDOTS1$type)
+
+
+# I also found a spreadsheet titled 'dot plots' 
+# may want to look at these genes too.  
 
 # DOTS <- read_csv('raw_data/dot_plot_markers.csv') %>%
 #   filter(!(gene_name %in% c('BOLA-DRB1','FTL3'))) %>%
@@ -206,19 +210,25 @@ ggsave('outputs/figures/dim_plot_dot_plot_group.jpeg', width = 7, height = 5, un
 # https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-022-08562-0
 
 
-
-# these are cells in the lower right corner where the B cells are
-# some weird myeloid classified clusters
-# UMAP_COORDS <-
-#   All.integrated@reductions$umap@cell.embeddings %>%
-#   as.data.frame() %>%
-#   rownames_to_column(var = 'CELL')
-# 
-# All.integrated@meta.data %>%
-#   rownames_to_column(var = 'CELL') %>%
-#   left_join(UMAP_COORDS) %>%
-#   filter(UMAP_1 >4 & UMAP_2 < -5) %>%
-#   group_by(all_ident, manual_ID) %>%
-#   tally()
-
 SaveH5Seurat(All.integrated, 'outputs/classified_clusters_30', overwrite=TRUE)
+
+### cell types proportions across samples:
+
+cell_type_counts <- 
+  All.integrated@meta.data %>%
+  group_by(sample_ID,individual,tissue, dot_plot_group) %>% 
+  tally() %>% 
+  ungroup() %>% 
+  group_by(sample_ID,individual,tissue) %>% 
+  mutate(percent_abund = (n / sum(n)) * 100) 
+
+cell_type_counts %>%
+  ggplot(aes(x=individual, y=percent_abund, fill=dot_plot_group)) + 
+  geom_col() +
+  facet_wrap(~tissue)
+
+cell_type_counts %>%
+  ggplot(aes(x=tissue, y=percent_abund, fill=dot_plot_group)) + 
+  geom_boxplot() 
+
+#rmarkdown::render("mastitis_scRNAseq_report.Rmd")

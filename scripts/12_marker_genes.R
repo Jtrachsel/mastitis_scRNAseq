@@ -24,17 +24,25 @@ options(future.globals.maxSize = 200000 * 1024^2)
 
 
 # makes 'feature' plots using specified markers
+# breaks them into chunks of 6 so the plots arent too small
 make_feature_plots <- function(SEURAT, matched_markers,label ){
   # browser()
   feature_plots <-
     matched_markers %>%
-    group_by(type) %>%
-    summarise(marker_genes=list(gene_name)) %>%
-    mutate(feature_plot=map(.x=marker_genes, .f=~FeaturePlot(SEURAT, features = .x)),
-           plot_path=glue('outputs/figures/{label}_{type}_feature_plot.jpeg'),
+    group_by(type) %>% 
+    mutate(type2=paste0(type, '_',ceiling(1:n()/6))) %>%  # make groups of 6
+    ungroup() %>% 
+    group_by(type2) %>% 
+    summarise(marker_genes=list(gene_name),
+              .groups = 'drop') %>%
+    mutate(plot_path=glue('outputs/figures/{label}_{type2}_feature_plot.jpeg'),
+           plot_title=glue('{type2}, Dims = {label}'),
+           feature_plot=map2(.x=marker_genes,.y=plot_title,
+                            .f=~FeaturePlot(SEURAT, features = .x) +
+                              patchwork::plot_annotation(title=.y)),
            ggsave_res=map2(.x=feature_plot,
                            .y=plot_path,
-                           .f=~ggsave(plot = .x, filename = .y, width=9, height=7, units='in', bg='white')))
+                           .f=~ggsave(plot = .x , filename = .y, width=9, height=7, units='in', bg='white')))
 
   return(feature_plots)
 
@@ -99,8 +107,11 @@ matched_markers <-
 
 #
 feature_plots <-
-  matched_markers %>%
-  group_by(type) %>%
+  matched_markers %>% 
+  group_by(type) %>% 
+  mutate(type2=paste0(type, '_',ceiling(1:n()/6))) %>% 
+  ungroup() %>% 
+  group_by(type2) %>% 
   summarise(marker_genes=list(gene_name)) %>%
   mutate(feature_plot=map(.x=marker_genes, .f=~FeaturePlot(All.integrated_30, features = .x)))
 

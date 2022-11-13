@@ -6,7 +6,8 @@ output:
     toc: true
     toc_float: true
     toc_depth: 2
-    code_folding: show
+    code_folding: hide
+    css: "themeytheme.css"
 ---
 
 ```{r setup, include=FALSE}
@@ -16,12 +17,19 @@ library(kableExtra)
 
 ```
 
-# 00-Overview  
+
+# 00-Intro  
 
 - This document outlines all the steps taken in the analysis of the mastitis single cell RNAseq data  
 - Each heading corresponds to one step/script in the pipeline.  
 - Code chunks can be expanded to see the script for each step.  
-- All code is available at https://github.com/Jtrachsel/mastitis_scRNAseq  
+- All code is available at https://github.com/Jtrachsel/mastitis_scRNAseq
+  - will fork to https://github.com/USDA-FSEPRU/mastitis_scRNAseq
+  
+## Outputs    
+- The end product of this pipeline is a Seurat object with each cluster assigned to a broad category based on an input marker gene / cell type spreadsheet.  
+- extended annotations of the detected genes are also mapped and downloaded from ensembl  
+  - GO terms, homologues etc. 
   
   
   
@@ -63,12 +71,13 @@ library(kableExtra)
 
 ## Figures    
 
-!['cells per replicate'](outputs/Estimated_cells.jpeg)
-!['reads per cell'](outputs/Estimated_reads_per_cell.jpeg)  
+!['cells per replicate'](outputs/figures/Estimated_cells.jpeg)
+!['reads per cell'](outputs/figures/Estimated_reads_per_cell.jpeg)  
 
 
 
-
+### Cellranger mapping summary  
+  
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 summarydat <- 
   read_tsv('outputs/first_cellranger_results.tsv') %>% 
@@ -107,48 +116,48 @@ summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_si
 
 ### 1312 blood  
 #### pre-SoupX  
-![Pre-SoupX](./outputs/figures/1312blood_pre_soupX.jpeg)  
+![](./outputs/figures/1312blood_pre_soupX.jpeg)  
   
 #### post-SoupX  
-![Post-SoupX](./outputs/figures/1312blood_post_soupX.jpeg)  
+![](./outputs/figures/1312blood_post_soupX.jpeg)  
   
 
 ### 1312 milk  
 #### pre-SoupX  
-![Pre-SoupX](./outputs/figures/1312milk_pre_soupX.jpeg)  
+![](./outputs/figures/1312milk_pre_soupX.jpeg)  
   
 #### post-SoupX  
-![Post-SoupX](./outputs/figures/1312milk_post_soupX.jpeg)  
+![](./outputs/figures/1312milk_post_soupX.jpeg)  
   
 ### 1630 blood  
 #### pre-SoupX  
-![Pre-SoupX](./outputs/figures/1630blood_pre_soupX.jpeg)  
+![](./outputs/figures/1630blood_pre_soupX.jpeg)  
   
 #### post-SoupX  
-![Post-SoupX](./outputs/figures/1630blood_post_soupX.jpeg)  
+![](./outputs/figures/1630blood_post_soupX.jpeg)  
   
 
 ### 1630 milk  
 #### pre-SoupX  
-![Pre-SoupX](./outputs/figures/1630milk_pre_soupX.jpeg)  
+![](./outputs/figures/1630milk_pre_soupX.jpeg)  
   
 #### post-SoupX  
-![Post-SoupX](./outputs/figures/1630milk_post_soupX.jpeg)  
+![](./outputs/figures/1630milk_post_soupX.jpeg)  
   
 ### 1634 blood  
 #### pre-SoupX  
-![Pre-SoupX](./outputs/figures/1634blood_pre_soupX.jpeg)  
+![](./outputs/figures/1634blood_pre_soupX.jpeg)  
   
 #### post-SoupX  
-![Post-SoupX](./outputs/figures/1634blood_post_soupX.jpeg)  
+![](./outputs/figures/1634blood_post_soupX.jpeg)  
   
 
 ### 1634 milk  
 #### pre-SoupX  
-![Pre-SoupX](./outputs/figures/1634milk_pre_soupX.jpeg)  
+![](./outputs/figures/1634milk_pre_soupX.jpeg)  
   
 #### post-SoupX  
-![Post-SoupX](./outputs/figures/1634milk_post_soupX.jpeg)  
+![](./outputs/figures/1634milk_post_soupX.jpeg)  
   
 ## Code  
   
@@ -162,6 +171,7 @@ summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_si
 
 - Follows the introductory vignette  
   - https://bioconductor.org/packages/devel/bioc/vignettes/scDblFinder/inst/doc/introduction.html  
+  
 - Run using the 'multiple samples' suggestions:
   - https://github.com/plger/scDblFinder#multiple-samples  
 
@@ -255,7 +265,9 @@ In the standard Seurat workflow we focus on 10 PCs for this dataset, though we h
 ![](./outputs/figures/int_by_samp_elbow.jpeg)  
 ![](./outputs/figures/int_by_tissue_elbow.jpeg)  
   
-### Dim plots at different dimensionality choices    
+### Dim plots at different dimensionality choices  
+- lowest clustering resolution shown for each choice  
+  
   
 ```{r, results='asis', echo=FALSE}
 files <- list.files(path = "outputs/figures", pattern = ".*sample_ID_.*_clusters.jpeg", full.names = TRUE)
@@ -282,6 +294,20 @@ for (f in files) {
 - Takes a pre-existing set of marker genes and checks which ones are informative
 - removes non-informative marker genes from consideration  
   - usually because they are detected in very few cells  
+- Makes feature plots from specified marker genes  
+
+### Marker genes input file  
+  
+- Marker genes and their categories are supplied to these scripts in a spreadsheet format:  
+  - Can add more genes and categories if needed.    
+
+```{r, echo=FALSE, message=FALSE}
+read_tsv('raw_data/marker_genes_updated.tsv') %>%
+  kable() %>% 
+  kable_styling(bootstrap_options = 'striped')
+
+```
+
 
 ```{r, eval=FALSE, code=readLines('scripts/12_marker_genes.R')}
 ```
@@ -302,12 +328,14 @@ for (f in files) {
 ![](./outputs/figures/grouped_dot_plot.jpeg)  
 ![](./outputs/figures/dim_plot_dot_plot_group.jpeg)    
   
-
-
+  
+![](outputs/figures/dimplot_30_cluster_labels.jpeg)  
+  
+  
 ### marker feature plots  
   
 ```{r, results='asis', echo=FALSE}
-files <- list.files(path = "outputs", pattern = "30_.*.jpeg", full.names = TRUE)
+files <- list.files(path = "outputs/figures", pattern = "30_.*_[0-9]_feature_plot.jpeg", full.names = TRUE)
 for (f in files) {
   cat(paste0("![image_label](", f, ")\n"))
   }

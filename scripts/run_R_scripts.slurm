@@ -10,9 +10,16 @@
 #SBATCH --mem=200G
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=julestrachsel@gmail.com
+#SBATCH -A fsep_004
 
 set -e
 module load singularity
+mkdir -p outputs/figures
+mkdir -p SoupX
+
+chmod g+s SoupX
+chmod g+s outputs
+chmod g+s outputs/figures
 
 ## need to make sure renv is set up
 # https://stackoverflow.com/questions/66311017/rscript-to-use-renv-environment
@@ -29,10 +36,20 @@ module load singularity
 # this means that all the packages I installed during this process
 # depend on the singularity container libraries.
 # So we have to use that same container to run the R scripts in a non-interactive way
-
+#date
+#echo 05_check_mapping.R
 #singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/05_check_mapping.R
+
+#date
+#echo 06_map_gene_ids.R
 #singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/06_map_gene_ids.R
+
+#date
+#echo 07_SoupX.R
 #singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/07_SoupX.R
+
+#date
+#echo 08_scDblFinder.R
 #singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/08_scDblFinder.R
 
 # this takes ~ 1 min
@@ -48,10 +65,16 @@ module load singularity
 #echo 11_cluster.R
 #singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/11_cluster.R
 
-date
-echo 12_marker_genes.R
-singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/12_marker_genes.R
+#date
+#echo 12_marker_genes.R
+#singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/12_marker_genes.R
+
+#date
+#echo 13_general_cluster_identity.R
+#singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/13_general_cluster_identity.R
 
 date
-echo 13_general_cluster_identity.R
-singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/13_general_cluster_identity.R
+echo rmarkdown_render.R
+singularity run /reference/containers/RStudio/4.2.0/rocker-geospatial.sif Rscript scripts/rmarkdown_render.R
+
+
