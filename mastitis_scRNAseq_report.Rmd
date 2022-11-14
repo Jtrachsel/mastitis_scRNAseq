@@ -24,15 +24,25 @@ library(kableExtra)
 - Each heading corresponds to one step/script in the pipeline.  
 - Code chunks can be expanded to see the script for each step.  
 - All code is available at https://github.com/Jtrachsel/mastitis_scRNAseq
-  - will fork to https://github.com/USDA-FSEPRU/mastitis_scRNAseq
+  - will fork to https://github.com/USDA-FSEPRU/mastitis_scRNAseq  
+- important QC cutoffs are set in 09_QC  
+  - percent mitochondrial, min transcripts etc.  
+  
   
 ## Outputs    
 - The end product of this pipeline is a Seurat object with each cluster assigned to a broad category based on an input marker gene / cell type spreadsheet.  
 - extended annotations of the detected genes are also mapped and downloaded from ensembl  
-  - GO terms, homologues etc. 
+  - GO terms, homologues etc.  
+- Figures describing the classification and abundance of identified clusters are in section 13_general_cluster_identity 
+
+
+
   
   
-  
+___  
+___  
+___  
+
   
 # 01-Extract Raw data  
   
@@ -331,7 +341,18 @@ read_tsv('raw_data/marker_genes_updated.tsv') %>%
   
 ![](outputs/figures/dimplot_30_cluster_labels.jpeg)  
   
+![](outputs/figures/cell_type_relative_abundance.jpeg)  
   
+![](outputs/figures/cluster_relative_abundances.jpeg)
+  
+  
+- Interesting things:  
+  - 1634 has relatively high levels of some T cells and B cells in the blood  
+    - clusters 11, 12, 14, 16, (15 in milk)
+  - 1630 is the only one with cluster 16 B cells in the milk (very low abundance though)  
+  - 1630 has relatively high cluster 9 abundance in both blood and milk
+    
+
 ### marker feature plots  
   
 ```{r, results='asis', echo=FALSE}
@@ -340,6 +361,8 @@ for (f in files) {
   cat(paste0("![image_label](", f, ")\n"))
   }
 ```  
+
+  
   
 ## Code  
 
