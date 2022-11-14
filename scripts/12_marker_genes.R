@@ -30,7 +30,7 @@ make_feature_plots <- function(SEURAT, matched_markers,label ){
   feature_plots <-
     matched_markers %>%
     group_by(type) %>% 
-    mutate(type2=paste0(type, '_',ceiling(1:n()/6))) %>%  # make groups of 6
+    mutate(type2=paste0(type, '_',ceiling(1:n()/4))) %>%  # make groups of 4
     ungroup() %>% 
     group_by(type2) %>% 
     summarise(marker_genes=list(gene_name),
@@ -109,7 +109,7 @@ matched_markers <-
 feature_plots <-
   matched_markers %>% 
   group_by(type) %>% 
-  mutate(type2=paste0(type, '_',ceiling(1:n()/6))) %>% 
+  mutate(type2=paste0(type, '_',ceiling(1:n()/4))) %>% 
   ungroup() %>% 
   group_by(type2) %>% 
   summarise(marker_genes=list(gene_name)) %>%

@@ -21,6 +21,9 @@ library(kableExtra)
 # 00-Intro  
 
 - This document outlines all the steps taken in the analysis of the mastitis single cell RNAseq data  
+- This analysis considered 2 different methods  of integration, and 3 different parameters for dimensionality (13, 30, and 86).  
+  - the final outputs used the following choices:  
+  - **integrated by sample_ID, dimensionality = 30**    
 - Each heading corresponds to one step/script in the pipeline.  
 - Code chunks can be expanded to see the script for each step.  
 - All code is available at https://github.com/Jtrachsel/mastitis_scRNAseq
@@ -33,8 +36,8 @@ library(kableExtra)
 - The end product of this pipeline is a Seurat object with each cluster assigned to a broad category based on an input marker gene / cell type spreadsheet.  
 - extended annotations of the detected genes are also mapped and downloaded from ensembl  
   - GO terms, homologues etc.  
-- Figures describing the classification and abundance of identified clusters are in section 13_general_cluster_identity 
-
+- Figures describing the classification and abundance of identified clusters are in section **13-General Cluster Identities**  
+  
 
 
   
@@ -312,8 +315,9 @@ for (f in files) {
   - Can add more genes and categories if needed.    
 
 ```{r, echo=FALSE, message=FALSE}
-read_tsv('raw_data/marker_genes_updated.tsv') %>%
-  kable() %>% 
+read_tsv('raw_data/marker_genes_updated.tsv', col_types = c('c')) %>%
+  mutate_if(is.character, ~replace_na(.,"")) %>% 
+  kable() %>%
   kable_styling(bootstrap_options = 'striped')
 
 ```
@@ -323,7 +327,7 @@ read_tsv('raw_data/marker_genes_updated.tsv') %>%
 ```
   
   
-# 13-Assign General Cluster Identities {.tabset}  
+# 13-General Cluster Identities {.tabset}  
   
 - Uses marker gene expression to assign cell clusters very broad types  
   - T cell  
@@ -348,7 +352,8 @@ read_tsv('raw_data/marker_genes_updated.tsv') %>%
   
 - Interesting things:  
   - 1634 has relatively high levels of some T cells and B cells in the blood  
-    - clusters 11, 12, 14, 16, (15 in milk)
+    - clusters 11, 12, 14, 16, (15 in milk)  
+    - Could these cells be important in the "no visible mastitis" phenotype for this animal?
   - 1630 is the only one with cluster 16 B cells in the milk (very low abundance though)  
   - 1630 has relatively high cluster 9 abundance in both blood and milk
     

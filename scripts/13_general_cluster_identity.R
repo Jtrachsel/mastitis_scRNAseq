@@ -122,7 +122,8 @@ pdot <-
         cluster.idents = T) +
   theme(axis.text.x = element_text(angle=-45, size=7.5, hjust = 0),
         panel.border = element_rect(fill=NA, color='black'),
-        panel.grid.major.y = element_line(color='grey90'))
+        panel.grid.major.y = element_line(color='grey90')) +
+  ggtitle('Pre-identified marker genes for cell types')
 pdot
 ggsave('outputs/figures/grouped_dot_plot.jpeg', height=6, width = 11, units = 'in', bg='white')
 
@@ -201,7 +202,8 @@ All.integrated@meta.data <-
 # ggsave('outputs/figures/dim_plot_manual_ID_coarse.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
 DimPlot(All.integrated, group.by = 'dot_plot_group', split.by = 'tissue',label = TRUE) +
-  theme(panel.border = element_rect(fill=NA, color='black'))
+  theme(panel.border = element_rect(fill=NA, color='black')) + 
+  ggtitle('Cell types from marker genes')
 
 ggsave('outputs/figures/dim_plot_dot_plot_group.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
@@ -225,10 +227,44 @@ cell_type_counts <-
 cell_type_counts %>%
   ggplot(aes(x=individual, y=percent_abund, fill=dot_plot_group)) + 
   geom_col() +
-  facet_wrap(~tissue)
+  facet_wrap(~tissue) + 
+  ggtitle('Percent abundance of cell types')
+
+ggsave('outputs/figures/cell_type_relative_abundance.jpeg',
+       width=7, height=5, units='in',bg='white')
 
 cell_type_counts %>%
   ggplot(aes(x=tissue, y=percent_abund, fill=dot_plot_group)) + 
   geom_boxplot() 
+
+cluster_cell_type_counts <- 
+  All.integrated@meta.data %>%
+  group_by(integrated_snn_res.0.5,sample_ID,individual,tissue, dot_plot_group) %>% 
+  tally() %>% 
+  ungroup() %>% 
+  group_by(sample_ID,individual,tissue) %>% 
+  mutate(percent_abund = (n / sum(n)) * 100) 
+
+
+cluster_cell_type_counts %>%
+  mutate(FACET=paste0(integrated_snn_res.0.5, '_',dot_plot_group)) %>% 
+  ggplot(aes(x=tissue, y=percent_abund, fill=individual)) +
+  geom_col(position = position_dodge(), color='white') +
+  facet_wrap(~FACET, scales = 'free', nrow = 3) + 
+  theme_bw() + ylab('percent abundance of sample') + 
+  ggtitle('Cluster abundances')
+
+ggsave('outputs/figures/cluster_relative_abundances.jpeg', height = 5, width = 9, units = 'in', bg='white')
+# 1634 has relatively high levels of some T cells and B cells in the blood
+  # clusters 11, 12, 14, 15, 16 
+
+
+
+
+# cell_type_counts %>%
+#   ggplot(aes(x=dot_plot_group, y=percent_abund, fill=tissue)) + 
+#   geom_boxplot()+
+#   facet_wrap(~dot_plot_group)
+
 
 #rmarkdown::render("mastitis_scRNAseq_report.Rmd")
