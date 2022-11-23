@@ -7,8 +7,9 @@ library(readxl)
 seu <- LoadH5Seurat('outputs/classified_clusters_30.h5seurat')
 
 
-CLUSTER_MARKERS <- read_tsv('outputs/30_markers.tsv')
-CLUSTER_MARKERS
+CLUSTER_MARKERS <- 
+  read_tsv('outputs/30_markers.tsv')%>% 
+  filter(p_val_adj < 0.05)
 
 # cluster 0 has IL1RN as top 
 system('mkdir CellMarker_DB')
@@ -30,16 +31,27 @@ download.file('http://bio-bigdata.hrbmu.edu.cn/CellMarker/CellMarker_download_fi
 # get consensus cluster types
 
 
-human_homologs <- read_tsv('outputs/human_homologs.tsv')
+human_homologs <- read_tsv('outputs/human_homologs.tsv') %>%
+  filter(hsapiens_homolog_orthology_type == 'ortholog_one2one')
 
 
 
 HUMAN_MARKERS <- read_xlsx('CellMarker_DB/Cell_marker_Human.xlsx')
+
+
+
+MOUSE_MARKERS <- read_xlsx('CellMarker_DB/Cell_marker_Mouse.xlsx')
+
+
+
 GENE_ID_MAPPING <- read_tsv('outputs/gene_ID_mapping.tsv') %>% mutate(gene=name)
 
 
-CLUSTER_MARKERS <- CLUSTER_MARKERS %>% left_join(GENE_ID_MAPPING)
-
+HUMAN_CLUSTER_MARKERS <- 
+  CLUSTER_MARKERS %>% 
+  left_join(GENE_ID_MAPPING) %>%
+  left_join(human_homologs) %>% 
+  filter(!is.na(hsapiens_homolog_associated_gene_name))
 
 
 

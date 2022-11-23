@@ -48,6 +48,8 @@ ortholog_filters <-
 
 ATTRIBUTES <- listAttributes(mart)
 
+
+
 human_homologs <- 
   ATTRIBUTES %>% 
   filter(page == 'homologs') %>% 
@@ -68,11 +70,17 @@ pig_homologs <-
 
 
 # ATTRIBUTES %>% filter(grepl('Synon', description))
+# 'hgnc_id'?
+# uniparc
+# uniprot_gn_id
+# entrezgene_id
+
 
 G_list <- getBM(filters= c("ensembl_gene_id"),
                 attributes= c("ensembl_gene_id",
                               'chromosome_name',
                               "external_gene_name",
+                              'entrezgene_id',
                               'description'),
                 values=All_genes$ID,
                 mart= mart)
