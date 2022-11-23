@@ -49,6 +49,59 @@ seu@meta.data %>%
   hist(xlab='log(nCount/nFeature)',
        main='log(total counts / number of genes) per cell' )
 
+# from https://hbctraining.github.io/scRNA-seq/lessons/04_SC_quality_control.html
+# to help id low complexit cells
+seu@meta.data$log10GenesPerUMI <- log10(seu@meta.data$nFeature_originalexp) / log10(seu@meta.data$nCount_originalexp)
+
+seu@meta.data %>% 
+  ggplot(aes(x=log10GenesPerUMI)) +
+  geom_histogram() + 
+  geom_vline(xintercept = .8)+
+  facet_wrap(~individual + tissue) + 
+  ggtitle("Log10 Genes / Log10 UMI", 'proxy for cell complexity, cutoff = 0.8')
+ggsave('outputs/figures/genes_per_umi_cutoff.jpeg', width = 6, height = 4, units = 'in', bg = 'white')
+
+
+# UMIs per cell
+seu@meta.data %>%
+  ggplot(aes(x=nCount_originalexp)) +
+  geom_histogram(bins=50)+ 
+  scale_x_log10()+
+  facet_wrap(~tissue+individual) + #xlim(0,5000) +
+  geom_vline(xintercept = c(1200)) +
+  ggtitle('UMIs per cell (log scale)', 'cutoff = 1200')
+
+ggsave('outputs/figures/UMIs_per_cell_cutoff.jpeg', width = 6, height = 4, units = 'in', bg = 'white')
+
+#
+# Genes per cell
+seu@meta.data %>%
+  ggplot(aes(x=nFeature_originalexp)) +
+  geom_histogram()+ scale_x_log10()+
+  facet_wrap(~tissue+individual) + #xlim(0,2000) +
+  geom_vline(xintercept = c(500)) +
+  ggtitle('Genes per cell (log scale)', 'cutoff = 500')
+
+ggsave('outputs/figures/genes_per_cell_cutoff.jpeg', width = 6, height = 4, units = 'in', bg = 'white')
+
+#
+seu@meta.data %>% 
+  ggplot(aes(y=nFeature_originalexp,
+             x=nCount_originalexp,
+             color=subsets_mitochondria_percent)) + 
+  geom_point() +
+  scale_colour_gradient(low = "gray90", high = "black") +
+  stat_smooth(method=lm) +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  theme_classic() +
+  geom_vline(xintercept = 1200) +
+  geom_hline(yintercept = 500)+
+  facet_wrap(~tissue)  
+  
+  
+
+
 # percent mt
 seu@meta.data %>%
   ggplot(aes(x=individual, y=subsets_mitochondria_percent, fill=tissue)) + geom_violin()
@@ -103,11 +156,13 @@ seu@meta.data <-
   mutate(REMOVE=case_when(
     scDblFinder.class == 'doublet'   ~ 'DOUBLET',
     subsets_mitochondria_percent > 10 ~ 'PCT_MIT_ABOVE_10',
-    nFeature_originalexp < 150       ~  'GENE_COUNT_BELOW_150',
-    nFeature_originalexp > 3000      ~ 'GENE_COUNT_ABOVE_3000',
+    nFeature_originalexp < 500       ~  'GENE_COUNT_BELOW_500',
+    nCount_originalexp < 1200        ~  'UMIs_BELOW_1200',
+    log10GenesPerUMI < 0.8           ~  'COMPLEXITY_BELOW_0.8',
+    # nFeature_originalexp > 3000      ~ 'GENE_COUNT_ABOVE_3000',
     TRUE                             ~ 'KEEP'),
-    REMOVE=factor(REMOVE, levels = c('KEEP', 'DOUBLET', 'GENE_COUNT_BELOW_150',
-                                     'GENE_COUNT_ABOVE_3000', 'PCT_MIT_ABOVE_10')))
+    REMOVE=factor(REMOVE, levels = c('KEEP', 'DOUBLET', 'GENE_COUNT_BELOW_500',
+                                     'PCT_MIT_ABOVE_10', 'UMIs_BELOW_1200','COMPLEXITY_BELOW_0.8' )))
 
 
 seu@meta.data %>%
@@ -132,9 +187,25 @@ non_zero_Features <- names(which(!rowSums(seu_filt) == 0))
 
 seu_filt <- subset(seu_filt, features=non_zero_Features)
 
+# remove genes expressed in fewer than 10 cells
+
+counts <- GetAssayData(object = seu_filt, slot = "counts")
+
+# Output a logical vector for every gene on whether the more than zero counts per cell
+nonzero <- counts > 0
+
+# Sums all TRUE values and returns TRUE if more than 10 TRUE values per gene
+keep_genes <- Matrix::rowSums(nonzero) >= 10
+
+# Only keeping those genes expressed in more than 10 cells
+filtered_counts <- counts[keep_genes, ]
+
+# Reassign to filtered Seurat object
+filtered_seurat <- CreateSeuratObject(filtered_counts, meta.data = seu_filt@meta.data)
+
 
 # write out seurat object
-seu_filt <- SeuratDisk::SaveH5Seurat(seu_filt, 'outputs/seurat_QC_done', overwrite = TRUE)
+seu_filt <- SeuratDisk::SaveH5Seurat(filtered_seurat, 'outputs/seurat_QC_done', overwrite = TRUE)
 
 
 
