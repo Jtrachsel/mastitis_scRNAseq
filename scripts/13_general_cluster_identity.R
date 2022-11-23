@@ -233,6 +233,7 @@ cell_type_counts %>%
 ggsave('outputs/figures/cell_type_relative_abundance.jpeg',
        width=7, height=5, units='in',bg='white')
 
+
 cell_type_counts %>%
   ggplot(aes(x=tissue, y=percent_abund, fill=dot_plot_group)) + 
   geom_boxplot() 
@@ -258,7 +259,9 @@ ggsave('outputs/figures/cluster_relative_abundances.jpeg', height = 5, width = 9
 # 1634 has relatively high levels of some T cells and B cells in the blood
   # clusters 11, 12, 14, 15, 16 
 
-
+cluster_cell_type_counts %>% ggplot(aes(x=individual, y=percent_abund, fill=integrated_snn_res.0.5)) + 
+  geom_col() + 
+  facet_wrap(~tissue)
 
 
 # cell_type_counts %>%

@@ -21,7 +21,7 @@ library(kableExtra)
 # 00-Intro  
 
 - This document outlines all the steps taken in the analysis of the mastitis single cell RNAseq data  
-- This analysis considered 2 different methods  of integration, and 3 different parameters for dimensionality (13, 30, and 86).  
+- This analysis considered 2 different methods  of integration, and 3 different parameters for dimensionality (13, 30, and 84).  
   - the final outputs used the following choices:  
   - **integrated by sample_ID, dimensionality = 30**    
 - Each heading corresponds to one step/script in the pipeline.  
@@ -202,8 +202,11 @@ summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_si
 - Removes "bad" cells based on these criteria:  
   - Doublets  
   - Greater than 10% mitochondrial reads  
-  - Less than 150 detected genes  
-  - Greater than 3000 detected genes  
+  - Less than 500 detected genes  
+  - Less than 1200 UMIs  
+  - log(genes) / log(UMIs) < 0.8  
+    - https://hbctraining.github.io/scRNA-seq/lessons/04_SC_quality_control.html  
+    -proxy for complexity  
 - rRNA depletion partially failed for one sample  
   - removed rRNA genes from downstream analysis  
   - most cells in all but one sample had no rRNA genes
@@ -218,13 +221,27 @@ summarydat %>%  kable() %>% kable_styling(bootstrap_options = 'striped', font_si
   
 ### Cutoff for percent mitochondrial reads  
 
-![mito](./outputs/figures/mitochondria_percent.jpeg)  
+![mito](outputs/figures/mitochondria_percent.jpeg)  
   
 ### Doublets  
   
 ![doublets](./outputs/figures/num_doublets.jpeg)  
   
-### NUmber of cells removed    
+### UMIs per cell cutoffs  
+  
+![](./outputs/figures/UMIs_per_cell_cutoff.jpeg)    
+  
+### Genes per cell cutoffs  
+  
+![](./outputs/figures/genes_per_cell_cutoff.jpeg)      
+  
+### log(genes) / log(UMIs)  
+  
+-complexity  
+   
+![](./outputs/figures/genes_per_umi_cutoff.jpeg)    
+  
+### Number of cells removed    
   
 ![removed cells](./outputs/figures/removed_cells.jpeg)  
   
@@ -291,7 +308,7 @@ for (f in files) {
   
 ### Number of clusters by resolution  
 
-- Interesting that high dimensionality (86) results in fewer clusters at high resolution  
+- Interesting that high dimensionality (84) results in fewer clusters at high resolution  
 
 ![](./outputs/figures/num_clusters_by_resolution.jpeg)
   

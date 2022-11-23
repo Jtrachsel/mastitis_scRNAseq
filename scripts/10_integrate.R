@@ -4,7 +4,7 @@ library(future)
 library(SeuratDisk)
 
 
-set.seed(4)
+set.seed(5)
 
 # setup plan for mulitprocessing
 if (future::supportsMulticore()){
@@ -43,7 +43,7 @@ RUN_integration <- function(SPLIT_BY, SEURAT){
 
   for (i in 1:length(All.list)) { # normalize data using SCTransform method
     All.list[[i]] <- SCTransform(All.list[[i]],
-                                 assay='originalexp',
+                                 assay='RNA',
                                  return.only.var.genes = TRUE,
                                  variable.features.n = 7500,
                                  # variable.features.n = NULL,   # Null to use rv.th

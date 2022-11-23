@@ -54,7 +54,7 @@ get_cluster_markers <- function(SEURAT, label){
   output_name <- glue('outputs/{label}_markers.tsv')
 
   Idents(SEURAT) <- 'integrated_snn_res.0.5'
-  FOUND_MARKERS <- FindAllMarkers(SEURAT, assay = 'originalexp',only.pos = TRUE )
+  FOUND_MARKERS <- FindAllMarkers(SEURAT, assay = 'RNA',only.pos = TRUE )
   FOUND_MARKERS %>% write_tsv(output_name)
   return(FOUND_MARKERS)
 
@@ -63,7 +63,7 @@ get_cluster_markers <- function(SEURAT, label){
 
 # read in 2 seurat objects under consideration
 All.integrated_30 <- LoadH5Seurat('outputs/All.integrated_30.h5seurat')
-All.integrated_86 <- LoadH5Seurat('outputs/All.integrated_86.h5seurat')
+All.integrated_84 <- LoadH5Seurat('outputs/All.integrated_84.h5seurat')
 
 
 # USE MARKER GENES FROM TABLE
@@ -166,8 +166,8 @@ matched_markers_filt %>% write_tsv('outputs/matched_markers_filt.tsv')
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5742132/
 
 number_cells_expressing_markers <-
-  tibble(gene_name=names(rowSums(All.integrated_30[matched_markers_filt$gene_name,]@assays$originalexp@counts > 0)),
-         num_positive=rowSums(All.integrated_30[matched_markers_filt$gene_name,]@assays$originalexp@counts > 0))
+  tibble(gene_name=names(rowSums(All.integrated_30[matched_markers_filt$gene_name,]@assays$RNA@counts > 0)),
+         num_positive=rowSums(All.integrated_30[matched_markers_filt$gene_name,]@assays$RNA@counts > 0))
 
 ## make a kable table from this
 number_cells_expressing_markers %>%
@@ -180,7 +180,7 @@ number_cells_expressing_markers %>%
 
 ### find all positive markers for each cluster at coarsest resolution
 feature_plots_30 <- make_feature_plots(SEURAT = All.integrated_30, matched_markers = matched_markers_filt, label = '30')
-feature_plots_86 <- make_feature_plots(SEURAT = All.integrated_86, matched_markers = matched_markers_filt, label = '86')
+feature_plots_84 <- make_feature_plots(SEURAT = All.integrated_84, matched_markers = matched_markers_filt, label = '84')
 
 markers_30 <- get_cluster_markers(SEURAT = All.integrated_30, label='30')
-markers_86 <- get_cluster_markers(SEURAT = All.integrated_86, label='86')
+markers_84 <- get_cluster_markers(SEURAT = All.integrated_84, label='84')

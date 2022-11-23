@@ -87,7 +87,7 @@ pcs_tissue <- determine_dimensionality(integrated_by_tissue)
 
 ElbowPlot(integrated_by_sample_ID, ndims = 100) +
   geom_vline(xintercept = c(pcs_ID[1],30,pcs_ID[2])) +
-  ylim(0,15)+
+  ylim(0,20)+
   annotate(geom = 'label', x=pcs_ID[2],y=10, label=pcs_ID[2])+
   annotate(geom = 'label', x=30,y=10, label=30)+
   annotate(geom = 'label', x=pcs_ID[1],y=10, label=pcs_ID[1])+
@@ -100,7 +100,7 @@ ElbowPlot(integrated_by_tissue, ndims = 100) +
   annotate(geom = 'label', x=pcs_tissue[2],y=10, label=pcs_tissue[2])+
   annotate(geom = 'label', x=30,y=10, label=30)+
   annotate(geom = 'label', x=pcs_tissue[1],y=10, label=pcs_tissue[1])+
-  ylim(0,15)+
+  ylim(0,20)+
   ggtitle('elbow plot - integrated by tissue')
 
 ggsave(filename = 'outputs/figures/int_by_tissue_elbow.jpeg', width = 5, height = 3.5, units = 'in', bg='white')
@@ -161,7 +161,7 @@ RESULTS %>%
 # using more dimensions gives more structure in the dimensionality reduction plots
 # going with integrated by sampleid with 86 PCs used for clustering and viz
 All.integrated <- RESULTS$seurat_objects[[1]]
-DefaultAssay(All.integrated) <- "originalexp"
+DefaultAssay(All.integrated) <- "RNA"
 
 # integrated has the dim reductions, so cant remove?
 # All.integrated[['integrated']] <- NULL
@@ -171,13 +171,13 @@ DefaultAssay(All.integrated) <- "originalexp"
 All.integrated <- NormalizeData(All.integrated,
                                 normalization.method = "LogNormalize",
                                 scale.factor = 10000,
-                                assay = "originalexp")
+                                assay = "RNA")
 
 All.integrated <- ScaleData(All.integrated,
-                            assay = "originalexp")
+                            assay = "RNA")
 
 
-SaveH5Seurat(All.integrated, filename = 'outputs/All.integrated_86', overwrite = TRUE)
+SaveH5Seurat(All.integrated, filename = 'outputs/All.integrated_84', overwrite = TRUE)
 
 ### NOW FOR 30 DIMS
 
@@ -187,15 +187,15 @@ All.integrated <- RESULTS$seurat_objects[[5]]
 # All.integrated[['integrated']] <- NULL
 # All.integrated[['SCT']] <- NULL
 
-DefaultAssay(All.integrated) <- "originalexp"
+DefaultAssay(All.integrated) <- "RNA"
 
 All.integrated <- NormalizeData(All.integrated,
                                 normalization.method = "LogNormalize",
                                 scale.factor = 10000,
-                                assay = "originalexp")
+                                assay = "RNA")
 
 All.integrated <- ScaleData(All.integrated,
-                            assay = "originalexp")
+                            assay = "RNA")
 
 SaveH5Seurat(All.integrated, filename = 'outputs/All.integrated_30', overwrite=TRUE)
 
