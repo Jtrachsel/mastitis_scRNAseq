@@ -7,6 +7,7 @@ library(scater)
 # read in the single cell experiment object output by scDblFinder
 scDbl_out <- read_rds('outputs/scDblFinder_out.rds')
 # colnames(scDbl_out)
+# rownames(scDbl_out)
 
 # all detected genes and some data about them
 GENE_IDS <- read_tsv('outputs/gene_ID_mapping.tsv')
@@ -38,9 +39,6 @@ scDbl_out <- scater::addPerCellQC(scDbl_out, subsets=QC_SUBSETS)
 
 # convert to seurat object
 seu <- scDbl_out %>% as.Seurat(data=NULL)
-
-GENE_IDS$seurat_IDs <- rownames(seu)
-write_tsv(GENE_IDS, 'outputs/gene_ID_mapping.tsv')
 
 
 seu@meta.data %>%
@@ -148,6 +146,13 @@ seu@meta.data %>%
 ### REMOVE rRNA genes here
 non_rRNA_genes <- GENE_IDS %>% filter(!grepl('_rRNA', name)) %>% pull(seurat_IDs)
 seu <- subset(seu, features=non_rRNA_genes)
+
+
+# WRITE OUT PRE-QC SEURAT OBJECT
+
+library(SeuratDisk)
+
+SaveH5Seurat(seu, 'outputs/pre_QC')
 
 # 10-8-2022 CHANGED PCT MITO FROM 5 TO 10!!!!
 # calculate cells to remove

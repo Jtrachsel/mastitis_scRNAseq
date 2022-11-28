@@ -11,40 +11,38 @@ SCE <- Read10X(sample_dirs)
 # add 'MT-' prefix to mitochondrial genes
 # O should probably find a better place to do this....
 # need to be careful that genes are in the correct order here...
-ID_map <- cbind(read_tsv('outputs/gene_ID_mapping.tsv'),
-                tibble(ROWNAMES=rownames(SCE)))
 
 # ID_map %>% filter(name != ROWNAMES)%>% select(name, ROWNAMES)
 
-write_tsv(ID_map, 'outputs/gene_ID_mapping.tsv')
+# write_tsv(ID_map, 'outputs/gene_ID_mapping.tsv')
 
-
-mito_names <-
-  ID_map %>%
-  filter(chromosome_name == 'MT') %>%
-  mutate(new_name=paste0('MT-', ROWNAMES))
-
-mito_swap <- mito_names$new_name
-names(mito_swap) <- mito_names$ROWNAMES
-
-other_names <-
-  ID_map %>%
-  filter(chromosome_name != 'MT')
-
-other_swap <- other_names$ROWNAMES
-names(other_swap) <- other_names$ROWNAMES
-
-all_swap <- c(mito_swap, other_swap)
-
-NEW_ROWNAMES <- all_swap[rownames(SCE)]
-
-names(NEW_ROWNAMES) <- NULL
-rownames(SCE) <- NEW_ROWNAMES
-
-### end change gene names ###
-
-# create SingleCellExperiment object
-SCE <- SingleCellExperiment::SingleCellExperiment(assays=list(counts=SCE))
+# 
+# mito_names <-
+#   ID_map %>%
+#   filter(chromosome_name == 'MT') %>%
+#   mutate(new_name=paste0('MT-', ROWNAMES))
+# 
+# mito_swap <- mito_names$new_name
+# names(mito_swap) <- mito_names$ROWNAMES
+# 
+# other_names <-
+#   ID_map %>%
+#   filter(chromosome_name != 'MT')
+# 
+# other_swap <- other_names$ROWNAMES
+# names(other_swap) <- other_names$ROWNAMES
+# 
+# all_swap <- c(mito_swap, other_swap)
+# 
+# NEW_ROWNAMES <- all_swap[rownames(SCE)]
+# 
+# names(NEW_ROWNAMES) <- NULL
+# rownames(SCE) <- NEW_ROWNAMES
+# 
+# ### end change gene names ###
+# 
+# # create SingleCellExperiment object
+# SCE <- SingleCellExperiment::SingleCellExperiment(assays=list(counts=SCE))
 
 # extract metadata from colnames
 COL_DAT <-

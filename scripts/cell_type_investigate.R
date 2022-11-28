@@ -53,7 +53,7 @@ HUMAN_CLUSTER_MARKERS <-
   left_join(human_homologs) %>% 
   filter(!is.na(hsapiens_homolog_associated_gene_name))
 
-
+FeaturePlot(seu, features = 'LCP1', split.by = 'tissue')
 
 
 

@@ -41,6 +41,22 @@ cellranger_results %>%
   select(individual, tissue,  everything(), -DIR, -metrics_path) %>%
   write_tsv('outputs/first_cellranger_results.tsv')
 
+#### NEED GENE_ID STUFF ###
+cellranger_dirs <- 
+  list.dirs(recursive = FALSE, path = 'cellranger_out') #%>%
+# grep('-[1-4]$', ., value = TRUE)
 
+# get a dataframe of all genes detected
+All_genes <- 
+  tibble(
+    DIR=cellranger_dirs, 
+    genes_path=paste0(DIR,'/outs/filtered_feature_bc_matrix/features.tsv.gz'),
+    GENES=map(.x=genes_path, .f=~read_tsv(gzfile(.x), col_names = c('ID', 'name', 'type')))
+  ) %>% 
+  unnest(GENES) %>% 
+  dplyr::select(ID, name) %>%
+  unique()
+
+write_tsv(All_genes, 'outputs/05_gene_ID_mapping.tsv')
 
 

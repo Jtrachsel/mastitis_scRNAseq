@@ -6,22 +6,24 @@ library(biomaRt)
 library(tidyverse)
 
 ### collect all detected genes from cellranger output
+scdblout <- read_rds('outputs/scDblFinder_out.rds')
 
-
-cellranger_dirs <- 
-  list.dirs(recursive = FALSE, path = 'cellranger_out/') #%>%
+All_genes <- read_tsv('outputs/05_gene_ID_mapping.tsv')
+All_genes <- cbind(All_genes,ROWNAMES=rownames(scdblout))
+# cellranger_dirs <- 
+#   list.dirs(recursive = FALSE, path = 'cellranger_out/') #%>%
   # grep('-[1-4]$', ., value = TRUE)
 
 # get a dataframe of all genes detected
-All_genes <- 
-  tibble(
-    DIR=cellranger_dirs, 
-    genes_path=paste0(DIR,'/outs/filtered_feature_bc_matrix/features.tsv.gz'),
-    GENES=map(.x=genes_path, .f=~read_tsv(gzfile(.x), col_names = c('ID', 'name', 'type')))
-  ) %>% 
-  unnest(GENES) %>% 
-  select(ID, name) %>%
-  unique()
+# All_genes <- 
+#   tibble(
+#     DIR=cellranger_dirs, 
+#     genes_path=paste0(DIR,'/outs/filtered_feature_bc_matrix/features.tsv.gz'),
+#     GENES=map(.x=genes_path, .f=~read_tsv(gzfile(.x), col_names = c('ID', 'name', 'type')))
+#   ) %>% 
+#   unnest(GENES) %>% 
+#   select(ID, name) %>%
+#   unique()
 
 # 26006 total transcripts detected across all samples
 
@@ -80,10 +82,23 @@ G_list <- getBM(filters= c("ensembl_gene_id"),
                 attributes= c("ensembl_gene_id",
                               'chromosome_name',
                               "external_gene_name",
-                              'entrezgene_id',
+                              # 'entrezgene_id',
                               'description'),
                 values=All_genes$ID,
                 mart= mart)
+
+
+
+entrez_mapping <- getBM(filters= c("ensembl_gene_id"),
+                        attributes= c("ensembl_gene_id",
+                                      'chromosome_name',
+                                      "external_gene_name",
+                                      'entrezgene_id',
+                                      'description'),
+                values=All_genes$ID,
+                mart= mart)
+
+
 # G_list %>% pull(chromosome_name) %>% unique()
 # G_list %>% filter(chromosome_name == 'MT')
 
@@ -142,11 +157,59 @@ pig_homologs_df <-
 
 synonyms %>% write_tsv('outputs/gene_synonyms.tsv')
 
+#
+# scDbl_out <- read_rds('outputs/scDblFinder_out.rds')
+
+
+
+
 
 All_genes <- 
   All_genes %>%
-  transmute(ensembl_gene_id=ID, name) %>%
-  left_join(G_list)
+  mutate(ensembl_gene_id=ID) %>%
+  left_join(G_list) %>% 
+  dplyr::select(ensembl_gene_id, everything(), -ID)
+
+
+library(SeuratObject)
+
+SeuratObject::as.Seurat(scdblout, )
+
+#### MITO_RENAME ####
+
+
+mito_names <-
+  All_genes %>%
+  filter(chromosome_name == 'MT') %>%
+  mutate(new_name=paste0('MT-', ROWNAMES))
+
+mito_swap <- mito_names$new_name
+names(mito_swap) <- mito_names$ROWNAMES
+
+other_names <-
+  All_genes %>%
+  filter(chromosome_name != 'MT')
+
+other_swap <- other_names$ROWNAMES
+names(other_swap) <- other_names$ROWNAMES
+
+all_swap <- c(mito_swap, other_swap)
+
+NEW_ROWNAMES <- all_swap[rownames(scdblout)]
+
+names(NEW_ROWNAMES) <- NULL
+rownames(scdblout) <- NEW_ROWNAMES
+
+# overwrite the old results object with the one with renamed MT-genes
+write_rds(scdblout, file = 'outputs/scDblFinder_out.rds')
+
+### END MITO RENAME
+
+# will eventually go to seurat object, need to get ahead of the wonky gene name changes
+library(Seurat)
+seu <- scdblout %>% as.Seurat(data=NULL)
+
+All_genes$seurat_IDs <- rownames(seu)
 
 
 write_tsv(All_genes, 'outputs/gene_ID_mapping.tsv')
