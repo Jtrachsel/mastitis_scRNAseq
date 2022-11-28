@@ -57,7 +57,15 @@ HUMAN_CLUSTER_MARKERS <-
 
 
 
+# DMXL2 drives epithelial to mesenchymal transition 
+# mesenchymal stem cell surface markers CD44, CD29, SCA-1 and negative for CD33, CD34, CD45, CD73
 
 
 
+# https://www.science.org/doi/10.1126/sciadv.abm6865
+# Profiling of mature-stage human breast milk cells identifies six unique lactocyte subpopulations
 
+# RESULTS
+# Epithelial lactocytes are the most abundant cell population in breast milk
+
+# Hassiotou et al. (7) reported that up to 94% of the total breast milk cell population consists of leukocytes in the case of infection,
