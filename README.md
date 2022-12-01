@@ -1,4 +1,24 @@
-## John Lippolis milk and blood single cell RNAseq project
+## John Lippolis mastitis milk and blood single cell RNAseq project
+
+## Updates 12-1-2022  
+
+- Jayne's investigations revealed that blood data is whole blood, not PBMC  
+  - large proportion of myleloid cells is expected because of this
+- Many cells may in fact be neutrophils (large majority in the milk, many in blood)  
+- Because of the above discoveries, the weird cell proportions are not due to poor quality data and low UMI/gene counts are expected for these cell types.  
+  - We can relax the QC filtering cutoffs to include more cells.  
+- Jayne added new marker genes and rough cell identities.  
+- Jayne started work collecting data sets to map our data onto.  This will help with cell type assignments.  
+  - One milk dataset of interest uses non ensembl geneIDs.  Need to figure out which database these IDs are from and map to ensembl.  
+  
+## TODO 12-1-2022  
+- Re-run QC with Jayne's relaxed cutoffs  
+- Use Jayne's markers to assign cell types and make a nice looking report.  
+- Figure out weird gene IDs in human milk data and map to ensembl.  
+  
+  
+  
+
 
 
 ## reference genome info
