@@ -3,9 +3,7 @@
 
 library(Seurat)
 library(SeuratDisk)
-library(dplyr)
-library(ggplot2)
-#library(ggridges)
+library(tidyverse)
 
 seu <- LoadH5Seurat('outputs/pre_QC.h5seurat')
 seu[['RNA']] <- seu[['originalexp']] 
@@ -20,6 +18,8 @@ seu@meta.data %>%
   geom_vline(xintercept = c(500)) +
   ggtitle('UMIs per cell (log scale)', 'cutoff = 500')
 
+ggsave('outputs/figures/001_UMIs_per_cell.jpeg', width=7, height = 4, units = 'in', bg='white')
+
 seu@meta.data %>%
   ggplot(aes(x=nFeature_RNA)) +
   geom_histogram(bins = 100)+ 
@@ -28,6 +28,10 @@ seu@meta.data %>%
   geom_vline(xintercept = c(250)) +
   ggtitle('Genes per cell (log scale)', 'cutoff = 250')
 
+ggsave('outputs/figures/002_genes_per_cell.jpeg', width=7, height = 4, units = 'in', bg='white')
+
+
+
 seu@meta.data %>%
   ggplot(aes(x=subsets_mitochondria_percent)) + 
   geom_histogram(bins=100)+
@@ -35,19 +39,28 @@ seu@meta.data %>%
   geom_vline(xintercept = c(12.5))+
   ggtitle('Percent mitochondrial reads per cell', 'cutoff = 12.5%')
 
+ggsave('outputs/figures/003_percent_mito_per_cell.jpeg', width=7, height = 4, units = 'in', bg='white')
+
+
+
 seu@meta.data %>% 
   ggplot(aes(y=nFeature_RNA,
              x=nCount_RNA,
              color=subsets_mitochondria_percent)) + 
   geom_point() +
-  scale_colour_gradient(low = "grey", high = "red4") +
+  scale_colour_gradient(low = "tan", high = "red4") +
   stat_smooth(method=lm) +
   scale_x_log10() + 
   scale_y_log10() + 
   theme_classic() +
   geom_vline(xintercept = 500) +
   geom_hline(yintercept = 250)+
-  facet_wrap(~tissue+individual) 
+  facet_wrap(~tissue+individual) +
+  ggtitle('genes vs UMIs + mitochondria percent') +
+  labs(color='% mito')
+  
+
+ggsave('outputs/figures/004_genes_vs_UMIs_mito.jpeg', width=7, height = 4, units = 'in', bg='white')
 
 seu@meta.data %>% 
   ggplot(aes(y=nFeature_RNA,
@@ -62,6 +75,8 @@ seu@meta.data %>%
   geom_vline(xintercept = 500) +
   geom_hline(yintercept = 250)+
   facet_wrap(~tissue+individual) 
+
+
 
 table(seu$scDblFinder.class, seu$sample_ID)
 
@@ -109,18 +124,23 @@ RidgePlot(seu, 'log10GenesPerUMI', same.y.lims = TRUE)
 
 
 ### REMOVE rRNA genes here
+
+# I'm not sure if Jayne ran these lines,  the current script doesnt have the required
+# GENE_IDs object.  Adding it now.  
+
+GENE_IDS <- read_tsv('outputs/gene_ID_mapping.tsv')
 non_rRNA_genes <- GENE_IDS %>% filter(!grepl('_rRNA', name)) %>% pull(seurat_IDs)
 seu <- subset(seu, features=non_rRNA_genes)
 
 seu@meta.data <-
   seu@meta.data %>%
   mutate(REMOVE=case_when(
-    scDblFinder.class == 'doublet'   ~ 'DOUBLET',
-    subsets_mitochondria_percent > 12.5 ~ 'PCT_MIT_ABOVE_12.5',
-    nFeature_originalexp < 250       ~  'GENE_COUNT_BELOW_250',
-    nCount_originalexp < 500        ~  'UMIs_BELOW_500',
-    TRUE                             ~ 'KEEP'),
-    REMOVE=factor(REMOVE, levels = c('KEEP', 'DOUBLET', 'GENE_COUNT_BELOW_250',
+           scDblFinder.class == 'doublet'      ~ 'DOUBLET',
+           subsets_mitochondria_percent > 12.5 ~ 'PCT_MIT_ABOVE_12.5',
+           nFeature_originalexp < 250          ~ 'GENE_COUNT_BELOW_250',
+           nCount_originalexp < 500            ~ 'UMIs_BELOW_500',
+           TRUE                                ~ 'KEEP'),
+         REMOVE=factor(REMOVE, levels = c('KEEP', 'DOUBLET', 'GENE_COUNT_BELOW_250',
                                      'PCT_MIT_ABOVE_12.5', 'UMIs_BELOW_500')))
 
 seu@meta.data %>%
@@ -135,13 +155,23 @@ seu@meta.data %>%
   xlim(0,10000) +
   ggtitle('Cells removed by different QC metrics')
 
+ggsave('outputs/figures/005_QC_cells_removed.jpeg', width=7, height = 4.5, units = 'in', bg='white')
+
+
+
 # remove bad cells
 seu_filt <- subset(seu, subset = REMOVE == 'KEEP')
 
 # remove genes with no expression in remaining cells
 non_zero_Features <- names(which(!rowSums(seu_filt) == 0))
 
+# genes with expression detected in more than 5 cells
+# Jayne, how do you feel about a filter like this?
+# names(which(rowSums(seu_filt@assays$RNA@counts > 0) > 5))
+
+
 seu_filt <- subset(seu_filt, features=non_zero_Features)
 
-SaveH5Seurat(seu_filt, '/home/Jayne.Wiarda/scRNAseqMastitisMilkBlood/Seurat/20221129_JEW_FilteredSeurat.h5seurat', overwrite = TRUE)
+# SaveH5Seurat(seu_filt, '/home/Jayne.Wiarda/scRNAseqMastitisMilkBlood/Seurat/20221129_JEW_FilteredSeurat.h5seurat', overwrite = TRUE)
 
+SaveH5Seurat(seu_filt, 'outputs/20221129_JEW_FilteredSeurat.h5seurat', overwrite = TRUE)
