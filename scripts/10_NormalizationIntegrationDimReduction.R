@@ -10,15 +10,15 @@ set.seed(5)
 
 # setup plan for mulitprocessing
 if (future::supportsMulticore()){
-  future::plan(multicore, workers=4)
+  future::plan(multicore, workers=6)
 } else {
-  future::plan(multisession, workers=4)
+  future::plan(multisession, workers=6)
 }
 
 # 200GB limit
 options(future.globals.maxSize = 200000 * 1024^2)
 
-seu <- LoadH5Seurat('/home/Jayne.Wiarda/scRNAseqMastitisMilkBlood/Seurat/20221129_JEW_FilteredSeurat.h5seurat')
+seu <- LoadH5Seurat('outputs/20221129_JEW_FilteredSeurat.h5seurat')
 seu
 
 seu.list <- SplitObject(seu, split.by = "sample_ID") # split by sample IDs
@@ -49,14 +49,29 @@ seu.integrated <- RunPCA(seu.integrated, # run PCA analysis for 100 dimensions o
 ElbowPlot(seu.integrated,
           ndims = 100) # look at this plot to find the 'elbow' for significant PCs... use this number of PCs for creating UMAP, tSNE, & cell neighbors & clustering
 
+
+
+
 ## Perform multidimensional visualization of data:
+
+# https://github.com/satijalab/seurat/issues/1836 shows a recommendation to use the
+# integrated assay for dim-reduction and vis
+
 seu.integrated <- RunUMAP(seu.integrated, 
                           dims = 1:30, # use our calculated number of PCs
                           reduction = "pca", 
-                          dim_embed = 3, # calculate 3 plot dimensions in case we want to try 3D plotting later
-                          min.dist = 0.5,
-                          spread = 0.2,
-                          assay = "SCT") # create UMAP
+                          dim_embed = 2, # calculate 3 plot dimensions in case we want to try 3D plotting later
+                          # min.dist = 0.5,
+                          # spread = 0.2,
+                          assay = "integrated") # create UMAP
+
+# seu.integrated <- RunUMAP(seu.integrated, 
+#                           dims = 1:30, # use our calculated number of PCs
+#                           reduction = "pca", 
+#                           dim_embed = 3, # calculate 3 plot dimensions in case we want to try 3D plotting later
+#                           min.dist = 0.5,
+#                           spread = 0.2,
+#                           assay = "SCT") # create UMAP
 seu.integrated <- RunTSNE(seu.integrated, 
                           dims = 1:30, 
                           reduction = "pca", 
@@ -78,5 +93,5 @@ seu.integrated <- ScaleData(seu.integrated, # scale the RNA counts data relative
 #dim(seu.integrated[["RNA"]]@scale.data) # see that all genes are scaled in RNA assay now
 
 DefaultAssay(seu.integrated) <- "RNA"
-SaveH5Seurat(seu.integrated, '/home/Jayne.Wiarda/scRNAseqMastitisMilkBlood/Seurat/20221129_JEW_IntegratedSeurat.h5seurat', overwrite = TRUE)
+SaveH5Seurat(seu.integrated, 'outputs/20221205_JEW_IntegratedSeurat.h5seurat', overwrite = TRUE)
 
