@@ -1,0 +1,166 @@
+---
+title: "Mastitis scRNAseq update"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: hide
+    css: "themeytheme.css"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(kableExtra)
+
+```
+
+
+# 00-Intro  
+
+  
+- Important changes:  
+  - QC cutoffs explored, settled on:  
+    - min UMI's == 500  
+    - min genes == 250  
+    - mitochondiral % < 12.5  
+    
+  
+
+  
+# 09-QC and cell removal {.tabset}  
+
+- Generates basic per-cell QC metrics  
+  
+- Removes "bad" cells based on these criteria:  
+  - Doublets  
+  - Greater than 12.5% mitochondrial reads  
+  - Less than 250 detected genes  
+  - Less than 500 UMIs  
+  - log(genes) / log(UMIs) < 0.8  
+    - https://hbctraining.github.io/scRNA-seq/lessons/04_SC_quality_control.html  
+    -proxy for complexity  
+- rRNA depletion partially failed for one sample  
+  - removed rRNA genes from downstream analysis  
+  - most cells in all but one sample had no rRNA genes
+
+- Outputs a Seurat object for downstream use  
+
+## Figures  
+
+  
+### Cutoff for percent mitochondrial reads  
+
+![mito](outputs/figures/mitochondria_percent.jpeg)  
+  
+### Doublets  
+  
+![doublets](./outputs/figures/num_doublets.jpeg)  
+  
+### UMIs per cell cutoffs  
+  
+![](./outputs/figures/001_UMIs_per_cell.jpeg)    
+  
+### Genes per cell cutoffs  
+  
+![](./outputs/figures/002_genes_per_cell.jpeg)      
+  
+### Percent mito  
+
+   
+![t](./outputs/figures/003_percent_mito_per_cell.jpeg)  
+  
+  
+### genes vs UMIs + mito  
+
+![t](./outputs/figures/004_genes_vs_UMIs_mito.jpeg)  
+  
+### Number of cells removed    
+  
+![removed cells](./outputs/figures/005_QC_cells_removed.jpeg)  
+  
+## Code  
+  
+```{r, eval=FALSE, code=readLines('scripts/09_CellGeneFiltering.R')}
+
+```  
+
+
+  
+
+# 10 Integrate   
+
+  
+## Code  
+```{r, eval=FALSE, code=readLines('scripts/10_NormalizationIntegrationDimReduction.R')}
+```
+  
+  
+# 11 Cluster and classify {.tabset}  
+
+
+
+  
+  
+## Figures {.tabset} 
+  
+  
+### General figs  
+
+- Many cells have low UMIs and detected genes  
+  
+![](./outputs/figures/005_UMIs_genes_FEATPLOT.jpeg)  
+
+![](./outputs/figures/008_Dimplot.jpeg)  
+![](./outputs/figures/007_grouped_dotplot.jpeg)  
+  
+  
+![](./outputs/figures/009_classified_TSNE.jpeg)      
+
+
+![](./outputs/figures/010_classified_UMAP.jpeg)  
+
+![](./outputs/figures/011_classified_TSNE_tissue.jpeg)  
+  
+  
+![](./outputs/figures/012_celltypes_tissue.jpeg)  
+  
+![](./outputs/figures/013_celltypes_sample.jpeg)    
+  
+![](./outputs/figures/014_celltypes_sample_NOnue.jpeg)  
+  
+  
+  
+
+
+
+  
+  
+### Feature plots    
+  
+  
+![](./outputs/figures/006_ALL_FEATURES.jpeg)  
+  
+  
+  
+  
+```{r, results='asis', echo=FALSE}
+files <- list.files(path = "outputs/figures", pattern = "FEATS.*jpeg", full.names = TRUE)
+for (f in files) {
+  cat(paste0("![image_label](", f, "){height=50% width=50% }\n"))
+  }
+```
+
+  
+  
+## Code
+  
+```{r, eval=FALSE, code=readLines('scripts/11_ClusteringGeneQuery.R')}  
+```
+  
+ 
+
+
+
+
