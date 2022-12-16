@@ -65,23 +65,23 @@ num_clusters_by_resolution <-
 ## two different seurat objects, one integrated by sample, one integrated by tissue
 # I think integrated by sample_ID is probably the way to go
 integrated_by_sample_ID <- LoadH5Seurat('outputs/split_by_sample_ID.h5seurat')
-integrated_by_tissue <- LoadH5Seurat('outputs/split_by_tissue.h5seurat')
+# integrated_by_tissue <- LoadH5Seurat('outputs/split_by_tissue.h5seurat')
 
 #
 DefaultAssay(integrated_by_sample_ID) <- "integrated"
-DefaultAssay(integrated_by_tissue) <- "integrated"
+# DefaultAssay(integrated_by_tissue) <- "integrated"
 
 # Run the standard workflow for visualization and clustering
 integrated_by_sample_ID <- ScaleData(integrated_by_sample_ID, verbose = TRUE)
 integrated_by_sample_ID <- RunPCA(integrated_by_sample_ID, npcs = 100, verbose = TRUE)
 
 # Run the standard workflow for visualization and clustering
-integrated_by_tissue <- ScaleData(integrated_by_tissue, verbose = TRUE)
-integrated_by_tissue <- RunPCA(integrated_by_tissue, npcs = 100, verbose = TRUE)
+# integrated_by_tissue <- ScaleData(integrated_by_tissue, verbose = TRUE)
+# integrated_by_tissue <- RunPCA(integrated_by_tissue, npcs = 100, verbose = TRUE)
 
 # Method for determining dimensionality from Jayne's scripts
 pcs_ID <- determine_dimensionality(integrated_by_sample_ID)
-pcs_tissue <- determine_dimensionality(integrated_by_tissue)
+# pcs_tissue <- determine_dimensionality(integrated_by_tissue)
 
 # look at various cutoffs on the elbow plots
 
@@ -95,56 +95,65 @@ ElbowPlot(integrated_by_sample_ID, ndims = 100) +
 
 ggsave(filename = 'outputs/figures/int_by_samp_elbow.jpeg', width = 5, height = 3.5, units = 'in', bg='white')
 
-ElbowPlot(integrated_by_tissue, ndims = 100) +
-  geom_vline(xintercept = c(pcs_tissue[1],30,pcs_tissue[2])) +
-  annotate(geom = 'label', x=pcs_tissue[2],y=10, label=pcs_tissue[2])+
-  annotate(geom = 'label', x=30,y=10, label=30)+
-  annotate(geom = 'label', x=pcs_tissue[1],y=10, label=pcs_tissue[1])+
-  ylim(0,20)+
-  ggtitle('elbow plot - integrated by tissue')
-
-ggsave(filename = 'outputs/figures/int_by_tissue_elbow.jpeg', width = 5, height = 3.5, units = 'in', bg='white')
+# ElbowPlot(integrated_by_tissue, ndims = 100) +
+#   geom_vline(xintercept = c(pcs_tissue[1],30,pcs_tissue[2])) +
+#   annotate(geom = 'label', x=pcs_tissue[2],y=10, label=pcs_tissue[2])+
+#   annotate(geom = 'label', x=30,y=10, label=30)+
+#   annotate(geom = 'label', x=pcs_tissue[1],y=10, label=pcs_tissue[1])+
+#   ylim(0,20)+
+#   ggtitle('elbow plot - integrated by tissue')
+# 
+# ggsave(filename = 'outputs/figures/int_by_tissue_elbow.jpeg', width = 5, height = 3.5, units = 'in', bg='white')
 
 # run clustering and vis on the various dimensionality choices
-RESULTS <-
-  tribble(~input_data, ~seurat_objects,
-        glue('integrated_by_sample_ID_{pcs_ID[1]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_ID[1]),
-        glue('integrated_by_sample_ID_{pcs_ID[2]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_ID[2]),
-        glue('integrated_by_tissue_{pcs_tissue[1]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_tissue[1]),
-        glue('integrated_by_tissue_{pcs_tissue[2]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_tissue[2]),
-        glue('integrated_by_sample_ID_30'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:30),
-        glue('integrated_by_tissue_30'), run_cluster_viz(integrated_by_tissue, PCdims = 1:30),
-        )
+
+# We have decided to move forward with "integrated_by_tissue" and 30 dimensions
+
+All.integrated <- run_cluster_viz(integrated_by_sample_ID, PCdims = 1:30)
+
+
+# RESULTS <-
+#   tribble(~input_data, ~seurat_objects,
+#         glue('integrated_by_sample_ID_{pcs_ID[1]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_ID[1]),
+#         glue('integrated_by_sample_ID_{pcs_ID[2]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_ID[2]),
+#         glue('integrated_by_tissue_{pcs_tissue[1]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_tissue[1]),
+#         glue('integrated_by_tissue_{pcs_tissue[2]}'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:pcs_tissue[2]),
+#         glue('integrated_by_sample_ID_30'), run_cluster_viz(integrated_by_sample_ID, PCdims = 1:30),
+#         glue('integrated_by_tissue_30'), run_cluster_viz(integrated_by_tissue, PCdims = 1:30),
+#         )
 
 # make some plots describing the number of clusters with different methods
 #HERE
-RESULTS <-
-  RESULTS %>%
-  mutate(num_clusts_dat=map(seurat_objects, ~num_clusters_by_resolution(.x)))
+# RESULTS <-
+#   RESULTS %>%
+#   mutate(num_clusts_dat=map(seurat_objects, ~num_clusters_by_resolution(.x)))
 
 # plot the number of clusters formed with the different integration and
 # dimensionality choices
 
-RESULTS %>%
-  select(-seurat_objects) %>%
-  unnest(num_clusts_dat) %>%
-  ggplot(aes(x=resolution, y=num_clusters, color=input_data)) +
-  geom_point() +
-  geom_line(aes(group=input_data)) +
-  ggtitle('number of clusters at different resolutions')
-ggsave('outputs/figures/num_clusters_by_resolution.jpeg', width = 7, height = 5, units = 'in',bg='white')
+# RESULTS %>%
+#   select(-seurat_objects) %>%
+#   unnest(num_clusts_dat) %>%
+#   ggplot(aes(x=resolution, y=num_clusters, color=input_data)) +
+#   geom_point() +
+#   geom_line(aes(group=input_data)) +
+#   ggtitle('number of clusters at different resolutions')
+# ggsave('outputs/figures/num_clusters_by_resolution.jpeg', width = 7, height = 5, units = 'in',bg='white')
 ### USE THIS FIG ###
 
 # generate DimPlots for choices of integration and dimensionality
 
-RESULTS <-
-  RESULTS %>%
-  mutate(dimplots_clusters=map2(.x=seurat_objects, .y=input_data,
-                      .f=~(DimPlot(.x, reduction='umap',group.by = 'integrated_snn_res.0.5', split.by = 'tissue') +
-                             ggtitle(.y))),
-         dimplots_individual=map2(.x=seurat_objects,.y=input_data,
-                      .f=~(DimPlot(.x, reduction='umap',group.by = 'individual', split.by = 'tissue') +
-                             ggtitle(.y))))
+DimPlot(All.integrated, reduction='umap',group.by = 'integrated_snn_res.0.5', split.by = 'tissue') +
+  ggtitle(.y)
+# 
+# RESULTS <-
+#   RESULTS %>%
+#   mutate(dimplots_clusters=map2(.x=seurat_objects, .y=input_data,
+#                       .f=~(DimPlot(.x, reduction='umap',group.by = 'integrated_snn_res.0.5', split.by = 'tissue') +
+#                              ggtitle(.y))),
+#          dimplots_individual=map2(.x=seurat_objects,.y=input_data,
+#                       .f=~(DimPlot(.x, reduction='umap',group.by = 'individual', split.by = 'tissue') +
+#                              ggtitle(.y))))
 
 usethis::use_directory('outputs/figures')
 

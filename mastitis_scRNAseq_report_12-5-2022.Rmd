@@ -146,6 +146,12 @@ library(kableExtra)
   
   
 ```{r, results='asis', echo=FALSE}
+
+function(paths, num_col){
+  
+  
+}
+
 files <- list.files(path = "outputs/figures", pattern = "FEATS.*jpeg", full.names = TRUE)
 for (f in files) {
   cat(paste0("![image_label](", f, "){height=50% width=50% }\n"))

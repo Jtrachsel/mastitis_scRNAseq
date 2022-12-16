@@ -50,6 +50,9 @@ ortholog_filters <-
 
 ATTRIBUTES <- listAttributes(mart)
 
+ATTRIBUTES$name[20]
+ATTRIBUTES$description
+ATTRIBUTES$page %>% unique()
 
 
 human_homologs <- 
@@ -173,7 +176,7 @@ All_genes <-
 
 library(SeuratObject)
 
-SeuratObject::as.Seurat(scdblout, )
+# SeuratObject::as.Seurat(scdblout, )
 
 #### MITO_RENAME ####
 
@@ -252,4 +255,39 @@ NOT_FOUND_MARKER_GENES <-
   filter(!(gene_name %in% All_genes$name)) %>% 
   unique()
 
+
+# 
+# ccds
+# CCDS ID
+# 
+# chembl
+# ChEMBL ID
+# 
+# 
+# entrezgene_trans_name
+# EntrezGene transcript name ID
+# feature_page
+# 59
+# embl
+# European Nucleotide Archive ID
+# 
+# arrayexpress
+# Expression Atlas ID
+# 
+# hgnc_id
+# HGNC ID
+# 
+# hpa_accession
+# Human Protein Atlas accession
+# 
+# hpa_id
+# Human Protein Atlas ID
+# 
+# 
+# protein_id
+# INSDC protein ID
+# 
+# 
+# refseq_mrna
+# RefSeq mRNA ID
 
