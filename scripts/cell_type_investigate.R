@@ -69,3 +69,7 @@ FeaturePlot(seu, features = 'LCP1', split.by = 'tissue')
 # Epithelial lactocytes are the most abundant cell population in breast milk
 
 # Hassiotou et al. (7) reported that up to 94% of the total breast milk cell population consists of leukocytes in the case of infection,
+
+
+
+# KRT18, the gene associated with CK18 and lactocytes
