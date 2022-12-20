@@ -144,7 +144,7 @@ tabula_blood_mapping <-
 bovinized_tabula_blood <- 
   tabula_blood_mapping %>% 
   left_join(BOVINIZER) %>%
-  filter(!is.na(BOVINE_ID)) %>% 
+  filter(!is.na(BOVINE_ID)) %>%  # removes genes from the mapping file without a 1:1 bovine homolog
   left_join(our_genes)
 
 
@@ -171,15 +171,89 @@ non_zero_genes <- rowSums(tabula_blood) > 0
 tabula_blood_filt <- tabula_blood[non_zero_genes,]
 
 # write out object
+# SaveH5Seurat(tabula_blood_filt, 'reference_mapping_data/tabula_sapiens_blood', overwrite=TRUE)
+
+# ref <- LoadH5Seurat("reference_mapping_data/tabula_sapiens_blood.h5seurat") # load in .h5seurat file 
+
+# reference data is already subset to just whole blood cells and already bovinized
+# meaning it's gene IDs have been converted to the same ones our data uses
+tabula_blood_filt@meta.data %>% group_by(donor) %>% tally()
+# 1974 cells is the fewest cells per donor
+
+
+
+
+# Normalize & integrate data:
+ref.list <- SplitObject(tabula_blood_filt, split.by = "donor") # split into the original samples that were processed for scRNA-seq
+for (i in 1:length(ref.list)) { # for each sample individually, let's normalize the data and find the 2000 most highly variable features
+  ref.list[[i]] <- NormalizeData(ref.list[[i]], 
+                                 verbose = TRUE, 
+                                 normalization.method = "LogNormalize", 
+                                 scale.factor = 10000, 
+                                 assay = "RNA")
+  ref.list[[i]] <- FindVariableFeatures(ref.list[[i]], 
+                                        selection.method = "vst", 
+                                        nfeatures = 2500, 
+                                        verbose = TRUE)
+}
+ref.anchors <- FindIntegrationAnchors(object.list = ref.list, 
+                                      dims = 1:40) # find integration anchors between samples based on variable features for each sample
+tabula_blood_filt <- IntegrateData(anchorset = ref.anchors, 
+                     dims = 1:40) # integrate the data together based on integration anchors found with default parameters
+
+tabula_blood_filt <- ScaleData(tabula_blood_filt, 
+                 verbose = TRUE, 
+                 assay = 'integrated') # scale the genes in the integrated assay
+
+# Calculate principle components:
+tabula_blood_filt <- RunPCA(tabula_blood_filt, # calculate first 100 PCs
+              npcs = 100, 
+              verbose = TRUE)
+ElbowPlot(tabula_blood_filt,
+          ndims = 100) # look at this plot to find the 'elbow' for significant PCs... use this number of PCs for creating UMAP, tSNE, & cell neighbors & clustering
+# pct <- ref[["pca"]]@stdev / sum(ref[["pca"]]@stdev) * 100 # find standard deviation for each PC
+# cumu <- cumsum(pct) # find cumulative percentages for PCs
+# co1 <- which(cumu > 90 & pct < 5)[1] # find PC representing cumulative percent >90% and less than 5% associated with the single PC
+# co2 <- sort(which((pct[1:length(pct) - 1] - pct[2:length(pct)]) > 0.1), decreasing = T)[1] + 1 # find last PC where change in percent variation is more than 0.1%
+# pcs <- min(co1, co2) # find the minimum PC from the 2 methods used above
+#plot_df <- data.frame(pct = pct, # put PC values into dataframe for plotting
+#                      cumu = cumu, 
+#                      rank = 1:length(pct))
+#ggplot(plot_df, aes(cumu, pct, label = rank, color = rank > pcs)) + # visualize PCs to use in elbow plot
+#  geom_text() + 
+#  geom_vline(xintercept = 90, color = "grey") + 
+#  geom_hline(yintercept = min(pct[pct > 5]), color = "grey") +
+#  theme_bw()
+# PCdims <- 1:pcs # use the minimum PC from the quantitative method above to set the PCs for subsequent steps
+#length(PCdims) # how many significant PCs are there?
+PCdims <- 1:30 # JT
+
+# Run UMAP dimensionality reduction:
+ref <- RunUMAP(tabula_blood_filt, dims = PCdims, reduction = "pca") # create UMAP
+DimPlot(tabula_blood_filt, 
+        group.by = "donor") # plot by sample ID
+
+
+tabula_blood_filt
+
+
+# Save reference as an .h5seurat object:
 SaveH5Seurat(tabula_blood_filt, 'reference_mapping_data/tabula_sapiens_blood', overwrite=TRUE)
-
-
-
 ###
+
+
+
+##### MILK DATA #####
+
 
 ### MIT human breast milk study 
 # nyquist used GRCh37
 # past version of human genome
+rm(ref)
+rm(ref.anchors)
+rm(ref.list)
+
+
 
 ###
 
@@ -302,6 +376,81 @@ rownames(Nyquist_counts)
 
 # Nyquist MIT milk data set, features subset to only bovine homologs and renamed to our bovine geneIDs
 Nyquist_milk <- Seurat::CreateSeuratObject(counts=Nyquist_counts, meta.data = Nyquist_meta)
-SaveH5Seurat(Nyquist_milk, 'reference_mapping_data/Nyquist_milk', overwrite = TRUE)
+
+
+# SaveH5Seurat(Nyquist_milk, 'reference_mapping_data/Nyquist_milk', overwrite = TRUE)
+
+
+# ref <- LoadH5Seurat("reference_mapping_data/tabula_sapiens_blood.h5seurat") # load in .h5seurat file 
+
+# reference data is already subset to just whole blood cells and already bovinized
+# meaning it's gene IDs have been converted to the same ones our data uses
+Nyquist_milk@meta.data %>% group_by(biosample_id) %>% tally() %>% arrange(desc(n))
+# 172 cells is the fewest cells per donor
+# Nyquist_milk@meta.data$biosample_id %>% unique()
+Nyquist_milk@meta.data %>% colnames()
+Nyquist_milk@meta.data %>% group_by(biosample_id)
+Nyquist_milk@meta.data %>% group_by(donor_id) %>% tally()
+
+
+Nyquist_milk@meta.data <- 
+  Nyquist_milk@meta.data %>%
+  mutate(DONOR_ID=ifelse(is.na(donor_id), 'BM00', donor_id))
+# Normalize & integrate data:
+ref.list <- SplitObject(Nyquist_milk, split.by = "DONOR_ID") # split into the original samples that were processed for scRNA-seq
+for (i in 1:length(ref.list)) { # for each sample individually, let's normalize the data and find the 2000 most highly variable features
+  ref.list[[i]] <- NormalizeData(ref.list[[i]], 
+                                 verbose = TRUE, 
+                                 normalization.method = "LogNormalize", 
+                                 scale.factor = 10000, 
+                                 assay = "RNA")
+  ref.list[[i]] <- FindVariableFeatures(ref.list[[i]], 
+                                        selection.method = "vst", 
+                                        nfeatures = 2000, 
+                                        verbose = TRUE)
+}
+ref.anchors <- FindIntegrationAnchors(object.list = ref.list, 
+                                      dims = 1:30) # find integration anchors between samples based on variable features for each sample
+Nyquist_milk <- IntegrateData(anchorset = ref.anchors, 
+                     dims = 1:30) # integrate the data together based on integration anchors found with default parameters
+
+Nyquist_milk <- ScaleData(Nyquist_milk, 
+                 verbose = TRUE, 
+                 assay = 'integrated') # scale the genes in the integrated assay
+
+# Calculate principle components:
+Nyquist_milk <- RunPCA(Nyquist_milk, # calculate first 100 PCs
+              npcs = 100, 
+              verbose = TRUE)
+ElbowPlot(Nyquist_milk,
+          ndims = 100) # look at this plot to find the 'elbow' for significant PCs... use this number of PCs for creating UMAP, tSNE, & cell neighbors & clustering
+# pct <- ref[["pca"]]@stdev / sum(ref[["pca"]]@stdev) * 100 # find standard deviation for each PC
+# cumu <- cumsum(pct) # find cumulative percentages for PCs
+# co1 <- which(cumu > 90 & pct < 5)[1] # find PC representing cumulative percent >90% and less than 5% associated with the single PC
+# co2 <- sort(which((pct[1:length(pct) - 1] - pct[2:length(pct)]) > 0.1), decreasing = T)[1] + 1 # find last PC where change in percent variation is more than 0.1%
+# pcs <- min(co1, co2) # find the minimum PC from the 2 methods used above
+#plot_df <- data.frame(pct = pct, # put PC values into dataframe for plotting
+#                      cumu = cumu, 
+#                      rank = 1:length(pct))
+#ggplot(plot_df, aes(cumu, pct, label = rank, color = rank > pcs)) + # visualize PCs to use in elbow plot
+#  geom_text() + 
+#  geom_vline(xintercept = 90, color = "grey") + 
+#  geom_hline(yintercept = min(pct[pct > 5]), color = "grey") +
+#  theme_bw()
+# PCdims <- 1:pcs # use the minimum PC from the quantitative method above to set the PCs for subsequent steps
+#length(PCdims) # how many significant PCs are there?
+PCdims <- 1:30 # JT
+
+# Run UMAP dimensionality reduction:
+Nyquist_milk <- RunUMAP(Nyquist_milk, dims = PCdims, reduction = "pca") # create UMAP
+DimPlot(Nyquist_milk, group.by = 'DONOR_ID', shuffle = T)
+
+Nyquist_milk
+
+
+# Save reference as an .h5seurat object:
+SaveH5Seurat(Nyquist_milk,filename = 'reference_mapping_data/nyquist_milk', overwrite=TRUE)
+
+
 
 
