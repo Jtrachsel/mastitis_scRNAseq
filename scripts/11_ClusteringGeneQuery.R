@@ -2,6 +2,7 @@ library(Seurat)
 library(future)
 library(SeuratDisk)
 library(clustree)
+library(tidyverse)
 
 set.seed(5)
 
@@ -307,8 +308,6 @@ ggsave('outputs/figures/012_celltypes_tissue.jpeg', height=5, width =8, units = 
 # 
 
 
-library(tidyverse)
-
 
 percent_abunds <- 
   seu@meta.data %>%
@@ -337,27 +336,6 @@ seu@meta.data %>%
 
 ggsave('outputs/figures/014_celltypes_sample_NOnue.jpeg', height=5, width =8, units = 'in', bg='white')
 
-# tissuePercents %>% as.data.frame() %>%
-#   rownames_to_column(var='cell_type')
-#   
-
-
-Idents(seu) <- seu$integrated_snn_res.6
-de61 <- FindMarkers(seu, ident.1 = 61)
-de80 <- FindMarkers(seu, ident.1 = 80)
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 FeaturePlot(seu,
             features = c('NTRK2', 'ELF5', 'CHRDL2', 'OLAH', 'CA6', #LC2
@@ -378,6 +356,6 @@ ggsave('outputs/figures/015_celltypes_sample.jpeg', height=5, width =8, units = 
 
 
 # SaveH5Seurat(seu, '/home/Jayne.Wiarda/scRNAseqMastitisMilkBlood/Seurat/20221129_JEW_IntegratedSeurat.h5seurat', overwrite = TRUE)
-SaveH5Seurat(seu, 'outputs/20221129_JEW_IntegratedSeurat.h5seurat', overwrite = TRUE)
+SaveH5Seurat(seu, 'outputs/Integrated_classified', overwrite = TRUE)
 
 

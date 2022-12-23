@@ -229,12 +229,11 @@ ElbowPlot(tabula_blood_filt,
 PCdims <- 1:30 # JT
 
 # Run UMAP dimensionality reduction:
-ref <- RunUMAP(tabula_blood_filt, dims = PCdims, reduction = "pca") # create UMAP
+tabula_blood_filt <- RunUMAP(tabula_blood_filt, dims = PCdims, reduction = "pca") # create UMAP
 DimPlot(tabula_blood_filt, 
         group.by = "donor") # plot by sample ID
 
 
-tabula_blood_filt
 
 
 # Save reference as an .h5seurat object:
@@ -452,5 +451,113 @@ Nyquist_milk
 SaveH5Seurat(Nyquist_milk,filename = 'reference_mapping_data/nyquist_milk', overwrite=TRUE)
 
 
+# create query objects from our data
 
+QUERY <- LoadH5Seurat('outputs/Integrated_classified.h5seurat')
+
+
+DefaultAssay(QUERY) <- 'RNA'
+# remove unneeded assays to reduce the size of the object
+QUERY[['SCT']] <- NULL
+QUERY[['integrated']] <- NULL
+
+
+# Filter query data to include only one-to-one gene orthologs 
+
+bovine_human_homologs <- BOVINIZER %>% left_join(our_genes)
+
+# this is our data subset to only genes that are one to one homologs with human genes
+QUERY <- QUERY[rownames(QUERY) %in% bovine_human_homologs$our_id,]
+QUERY$sample_ID
+query <- SplitObject(QUERY, split.by = "sample_ID") # split into the original samples that were processed for scRNA-seq
+for (i in 1:length(query)) { # for each sample individually, let's normalize the data and find the 2000 most highly variable features, scale the data, and find top 50 PCs
+  query[[i]] <- NormalizeData(query[[i]], 
+                              verbose = TRUE, 
+                              normalization.method = "LogNormalize", 
+                              scale.factor = 10000, 
+                              assay = "RNA")
+  query[[i]] <- FindVariableFeatures(query[[i]], 
+                                     selection.method = "vst", 
+                                     nfeatures = 2000, 
+                                     verbose = TRUE)
+  query[[i]] <- ScaleData(query[[i]]) # scale the data
+  query[[i]] <- RunPCA(query[[i]], # calculate 50 PCs
+                       npcs = 50, 
+                       verbose = TRUE)
+  DefaultAssay(query[[i]]) <- 'RNA'
+}
+
+
+write_rds(query, 'reference_mapping_data/reference_mapping_query.rds')
+
+
+
+# build integrated reference
+# make same column name for DONOR_ID
+
+
+tabula_blood_filt <- LoadH5Seurat('reference_mapping_data/tabula_sapiens_blood.h5seurat')
+Nyquist_milk <- LoadH5Seurat('reference_mapping_data/nyquist_milk.h5seurat')
+
+tabula_blood_filt$free_annotation %>% unique() # this one
+Nyquist_milk$General_Celltype %>% unique() # this one
+
+
+tabula_blood_filt@meta.data$DONOR_ID <- tabula_blood_filt@meta.data$donor
+Nyquist_milk@meta.data$DONOR_ID
+
+###
+reference_combined <- merge(Nyquist_milk, y = tabula_blood_filt, add.cell.ids = c("MILK", "BLOOD"), project = "integrated_reference")
+DefaultAssay(reference_combined) <- 'RNA'
+
+reference_combined[['integrated']] <- NULL
+
+
+### INTEGRATE BLOOD AND MILK REFERENCES INTO ONE REFERENCE
+
+ref.list <- SplitObject(reference_combined, split.by = "DONOR_ID") # split into the original samples that were processed for scRNA-seq
+for (i in 1:length(ref.list)) { # for each sample individually, let's normalize the data and find the 2000 most highly variable features
+  ref.list[[i]] <- NormalizeData(ref.list[[i]], 
+                                 verbose = TRUE, 
+                                 normalization.method = "LogNormalize", 
+                                 scale.factor = 10000, 
+                                 assay = "RNA")
+  ref.list[[i]] <- FindVariableFeatures(ref.list[[i]], 
+                                        selection.method = "vst", 
+                                        nfeatures = 4000, 
+                                        verbose = TRUE)
+}
+ref.anchors <- FindIntegrationAnchors(object.list = ref.list, 
+                                      dims = 1:40) # find integration anchors between samples based on variable features for each sample
+reference_combined <- IntegrateData(anchorset = ref.anchors, 
+                                   dims = 1:40) # integrate the data together based on integration anchors found with default parameters
+
+reference_combined <- ScaleData(reference_combined, 
+                               verbose = TRUE, 
+                               assay = 'integrated') # scale the genes in the integrated assay
+
+# Calculate principle components:
+reference_combined <- RunPCA(reference_combined, # calculate first 100 PCs
+                            npcs = 100, 
+                            verbose = TRUE)
+ElbowPlot(reference_combined,
+          ndims = 100) # look at this plot to find the 'elbow' for significant PCs... use this number of PCs for creating UMAP, tSNE, & cell neighbors & clustering
+PCdims <- 1:30 # JT
+
+# Run UMAP dimensionality reduction:
+reference_combined <- RunUMAP(reference_combined, dims = PCdims, reduction = "pca") # create UMAP
+DimPlot(reference_combined, 
+        group.by = "donor") # plot by sample ID
+
+
+reference_combined$General_Celltype %>% unique()
+reference_combined$cell_type__ontology_label %>% unique()
+
+reference_combined@meta.data <- 
+  reference_combined@meta.data %>%
+  mutate(general_cell_type=ifelse(!is.na(General_Celltype),General_Celltype, free_annotation))
+reference_combined@meta.data %>% pull(general_cell_type) %>% unique()
+
+
+SaveH5Seurat(reference_combined, filename = 'reference_mapping_data/integrated_reference')
 
