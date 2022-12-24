@@ -32,7 +32,6 @@ if (future::supportsMulticore()){
   future::plan(multisession, workers=16)
 }
 
-# 200GB limit
 options(future.globals.maxSize = 1000000 * 1024^2)
 
 
@@ -271,7 +270,34 @@ ref <- LoadH5Seurat("reference_mapping_data/integrated_reference.h5seurat") # lo
 DefaultAssay(ref) <- 'integrated'
 
 # 
-ref$general_cell_type %>% unique()
+ref@meta.data <- 
+  ref@meta.data %>%
+    mutate(broad_cell_type=case_when(
+    grepl('macrophage', general_cell_type,ignore.case = T) ~ 'macrophage',
+    grepl('neutrophil', general_cell_type,ignore.case = T) ~ 'neutrophil',
+    grepl('dendritic', general_cell_type,ignore.case = T) ~ 'dendritic',
+    grepl('eosinophil', general_cell_type,ignore.case = T) ~ 'eosinophils',
+    grepl('fibroblasts', general_cell_type,ignore.case = T) ~ 'fibroblasts',
+    grepl('erythrocyte', general_cell_type,ignore.case = T) ~ 'erythrocyte',
+    grepl('b cell', general_cell_type,ignore.case = T) ~ 'b cell',
+    grepl('t cell', general_cell_type,ignore.case = T) ~ 't cell',
+    grepl('nk cell', general_cell_type,ignore.case = T) ~ 'nk cell',
+    grepl('plasma cell', general_cell_type,ignore.case = T) ~ 'plasma cell',
+    grepl('platelet', general_cell_type,ignore.case = T) ~ 'platelet',
+    grepl('stem cell', general_cell_type,ignore.case = T) ~ 'stem cell',
+    grepl('monocyte', general_cell_type,ignore.case = T) ~ 'monocyte',
+    grepl('basophil', general_cell_type,ignore.case = T) ~ 'basophil',
+    grepl('plasmablast', general_cell_type,ignore.case = T) ~ 'plasmablast',
+    grepl('^LC[1-2]$', general_cell_type,ignore.case = T) ~ 'langerhans',
+    TRUE ~ 'other')) %>% 
+  mutate(dataset=ifelse(!is.na(manually_annotated),'tabula_blood', 'nyquist_milk'))
+
+ref@meta.data %>% group_by(general_cell_type) %>% tally() %>% arrange((n))
+ref@meta.data %>% group_by(broad_cell_type) %>% tally() %>% arrange((n))
+
+ref@meta.data %>% group_by(dataset,broad_cell_type) %>% tally() %>% arrange(desc(n))
+
+
 ## Perform label transfer and mapping:
 MappingScores <- list()
 CellTypePredictions <- list()
@@ -284,9 +310,15 @@ for(i in 1:length(query)) {
     normalization.method = "LogNormalize",
   ) 
   predictions <- TransferData(anchorset = anchors, 
-                              refdata = list(cell_type = ref$general_cell_type), # predict query dataset IDs at level of reference data's cluster, lineage, and cell type classifications
+                              refdata = list(cell_type = ref$general_cell_type, 
+                                             broad_type= ref$broad_cell_type), # predict query dataset IDs at level of reference data's cluster, lineage, and cell type classifications
                               dims = 1:30,
                               weight.reduction = "cca")
+  # predictions <- TransferData(anchorset = anchors, 
+                              # refdata = list(cell_type = 'general_cell_type', 
+                                             # broad_type= 'broad_cell_type'), # predict query dataset IDs at level of reference data's cluster, lineage, and cell type classifications
+                              # dims = 1:30,
+                              # weight.reduction = "cca")
   MapScores <- MappingScore(
     anchors = anchors@anchors,
     combined.object = anchors@object.list[[1]],
@@ -301,26 +333,44 @@ for(i in 1:length(query)) {
   CellTypePredictions[[i]] <- predictions
 } 
 
+length(CellTypePredictions)
+CellTypePredictions %>% str()
+
+mapping_scores <- 
+  MappingScores %>%
+  map(.f=~as.data.frame(.x) %>%
+        rownames_to_column(var='CELL') %>% 
+        transmute(CELL, mapping_score=.x)) %>% 
+  bind_rows()
 
 
-MappingScores <- Reduce(c,MappingScores)
-MappingScores <- as.data.frame(MappingScores) %>% rownames_to_column(var='CELL')
-CellTypePredictions <- do.call(rbind, CellTypePredictions)
-CellTypePredictions <- as.data.frame(CellTypePredictions)
-CellTypePredictions %>% group_by(predicted.id) %>% tally()
-# Save the mapping & prediction results:
-# MappingScores$CellBarcodes <- rownames(MappingScores)
-# CellTypePredictions$CellBarcodes <- rownames(CellTypePredictions)
-
-
-integrated_predictions <- 
+# the predictions list is now a list of lists
+# 
+Integrated_raw_cell_type_predictions <- 
   CellTypePredictions %>%
-  rownames_to_column(var = 'CELL') %>%
-  mutate(reference='nyquist_milk') %>% 
+  map(pluck(1)) %>%
+  bind_rows() %>%
+  rownames_to_column(var='CELL') %>%
   as_tibble() %>% 
-  left_join(MappingScores)
+  mutate(reference='integrated_raw') %>% 
+  left_join(mapping_scores) %>% 
+  write_tsv('outputs/integrated_predictions_raw.tsv')
 
-integrated_predictions %>%
+Integrated_broad_cell_type_predictions <- 
+  CellTypePredictions %>%
+  map(pluck(2)) %>%
+  bind_rows() %>%
+  rownames_to_column(var='CELL') %>% 
+  mutate(reference='integrated_broad') %>% 
+  left_join(mapping_scores) %>% 
+  write_tsv('outputs/integrated_predictions_broad.tsv')
+
+
+
+Integrated_broad_cell_type_predictions %>% group_by(predicted.id) %>% tally()
+
+
+Integrated_broad_cell_type_predictions %>%
   # filter(!(predicted.id %in% c('removed', 'CSN1S1 macrophages'))) %>% 
   # mutate(predicted=) %>% 
   ggplot(aes(x=prediction.score.max, fill=predicted.id)) + 
@@ -329,24 +379,23 @@ integrated_predictions %>%
   theme(legend.position = 'none')
 
 
-integrated_predictions %>%
+Integrated_broad_cell_type_predictions %>%
   # filter(!(predicted.id %in% c('removed', 'CSN1S1 macrophages'))) %>% 
   # mutate(predicted=) %>% 
-  ggplot(aes(x=MappingScores, fill=predicted.id)) + 
+  ggplot(aes(x=mapping_score, fill=predicted.id)) + 
   geom_histogram() + 
   facet_wrap(~predicted.id)+ scale_y_log10()+
   theme(legend.position = 'none')
 
-integrated_predictions %>% group_by(predicted.id) %>% tally() %>% arrange(n)
+Integrated_broad_cell_type_predictions %>% group_by(predicted.id) %>% tally() %>% arrange(n)
 
 
-integrated_predictions$MappingScores %>% hist()
+Integrated_broad_cell_type_predictions %>% 
+  ggplot(aes(y=mapping_score, x=prediction.score.max))+
+  geom_point(aes(color=predicted.id), alpha=.025) +
+  facet_wrap(~predicted.id) + 
+  xlim(0,1)+
+  ylim(0,1) 
 
-integrated_predictions %>%
-  write_tsv('outputs/integrated_predictions.tsv')
 
 
-
-### explore
-
-integrated_predictions
