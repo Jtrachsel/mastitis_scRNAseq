@@ -22,12 +22,12 @@ integrated_predictions_summary <-
   )
 
 
-
 rownames(seu@meta.data)
 seu@meta.data$CELL <- rownames(seu@meta.data)
 new_metadata <- 
   seu@meta.data %>%
   left_join(integrated_predictions_summary) %>% column_to_rownames(var='CELL')
+
 
 new_metadata %>% group_by(broad_type) %>% tally() %>% arrange((n))
 seu@meta.data <- new_metadata
@@ -35,4 +35,20 @@ seu@meta.data <- new_metadata
 seu_filt <- seu[,!seu@meta.data$broad_type %in% c('fibroblast', 'other')]
 
 
-DimPlot(seu_filt, group.by = 'broad_type', split.by = 'tissue')
+DimPlot(seu_filt, group.by = 'raw_type', split.by = 'tissue')
+
+
+# things are a little screwy...
+LOOK <- seu@meta.data %>% 
+  group_by(integrated_snn_res.0.5,tissue, broad_type) %>%
+  tally() %>%
+  arrange(desc(n)) %>%
+  slice_head(n = 2)
+
+
+
+# Probably makes the most sense to take the blood annotations for the blood samples
+# THen the milk annotations for the milk samples?
+
+
+
