@@ -170,27 +170,36 @@ for(i in 1:length(query)) {
 
 
 
-MappingScores <- Reduce(c,MappingScores)
-MappingScores <- as.data.frame(MappingScores) %>% rownames_to_column(var='CELL')
-CellTypePredictions <- do.call(rbind, CellTypePredictions)
-CellTypePredictions <- as.data.frame(CellTypePredictions)
-CellTypePredictions %>% group_by(predicted.id) %>% tally()
+MappingScores2 <- Reduce(c,MappingScores)
+
+MappingScores2 <-
+  as.data.frame(MappingScores2) %>%
+  rownames_to_column(var='CELL') %>% 
+  transmute(CELL, MappingScores=MappingScores2)
+
+CellTypePredictions2 <- do.call(rbind, CellTypePredictions)
+CellTypePredictions2 <- as.data.frame(CellTypePredictions2)
+CellTypePredictions2 %>% group_by(predicted.id) %>% tally()
+
+CellTypePredictions2 %>% rownames_to_column(var='CELL')
+
 # Save the mapping & prediction results:
 # MappingScores$CellBarcodes <- rownames(MappingScores)
 # CellTypePredictions$CellBarcodes <- rownames(CellTypePredictions)
 
-nyquist_milk_predictions %>%
-  filter(!(predicted.id %in% c('removed', 'CSN1S1 macrophages'))) %>% 
-  # mutate(predicted=) %>% 
-  ggplot(aes(x=prediction.score.max, fill=predicted.id)) + 
-  geom_histogram() + 
-  facet_wrap(~predicted.id, nrow = 2)+ scale_y_log10()
+# nyquist_milk_predictions %>%
+#   filter(!(predicted.id %in% c('removed', 'CSN1S1 macrophages'))) %>% 
+#   # mutate(predicted=) %>% 
+#   ggplot(aes(x=prediction.score.max, fill=predicted.id)) + 
+#   geom_histogram() + 
+#   facet_wrap(~predicted.id, nrow = 2)+ scale_y_log10()
 
-nyquist_milk_predictions <- CellTypePredictions %>%
+nyquist_milk_predictions <- 
+  CellTypePredictions2 %>%
   rownames_to_column(var = 'CELL') %>%
   mutate(reference='nyquist_milk') %>% 
   as_tibble() %>% 
-  left_join(MappingScores)
+  left_join(MappingScores2)
 
 nyquist_milk_predictions %>%
   write_tsv('outputs/nyquist_milk_predictions.tsv')
