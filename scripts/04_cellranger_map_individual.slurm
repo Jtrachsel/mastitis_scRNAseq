@@ -20,7 +20,9 @@ mkdir -p cellranger_out
 
 echo $SLURM_ARRAY_TASK_ID
 
-SAMPLE_ID=$(cat outputs/bio_samples.txt | sed -n ${SLURM_ARRAY_TASK_ID}p)
+# this returns the line from the bio_samples file that corresponds to the 
+# integer from the $SLURM_ARRAY_TASK_ID variable (which is an integer 1-6)
+SAMPLE_ID=$(cat outputs/bio_samples.txt | sed -n ${SLURM_ARRAY_TASK_ID}p) 
 
 echo $SAMPLE_ID
 

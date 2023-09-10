@@ -83,18 +83,21 @@ sample_ID_integration[['SCT']] <- NULL
 DefaultAssay(sample_ID_integration) <- "integrated"
 SeuratDisk::SaveH5Seurat(sample_ID_integration, 'outputs/split_by_sample_ID', overwrite = T)
 
+# 12-1-2022 
+# no longer considering integrated by tissue
 
-# clean up environment
-rm(sample_ID_integration)
-gc()
 
-## run integration splitting by tissue
-tissue_integration <- RUN_integration(SPLIT_BY = 'tissue', SEURAT = seu_filt)
-# remove SCT assay because we dont need it after integration
-tissue_integration[['SCT']] <- NULL
-DefaultAssay(tissue_integration) <- "integrated"
-SeuratDisk::SaveH5Seurat(tissue_integration, 'outputs/split_by_tissue', overwrite = T)
-
+# # clean up environment
+# rm(sample_ID_integration)
+# gc()
+# 
+# ## run integration splitting by tissue
+# tissue_integration <- RUN_integration(SPLIT_BY = 'tissue', SEURAT = seu_filt)
+# # remove SCT assay because we dont need it after integration
+# tissue_integration[['SCT']] <- NULL
+# DefaultAssay(tissue_integration) <- "integrated"
+# SeuratDisk::SaveH5Seurat(tissue_integration, 'outputs/split_by_tissue', overwrite = T)
+# 
 
 
 

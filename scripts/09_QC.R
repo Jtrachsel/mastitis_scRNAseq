@@ -7,6 +7,7 @@ library(scater)
 # read in the single cell experiment object output by scDblFinder
 scDbl_out <- read_rds('outputs/scDblFinder_out.rds')
 # colnames(scDbl_out)
+# rownames(scDbl_out)
 
 # all detected genes and some data about them
 GENE_IDS <- read_tsv('outputs/gene_ID_mapping.tsv')
@@ -39,9 +40,6 @@ scDbl_out <- scater::addPerCellQC(scDbl_out, subsets=QC_SUBSETS)
 # convert to seurat object
 seu <- scDbl_out %>% as.Seurat(data=NULL)
 
-GENE_IDS$seurat_IDs <- rownames(seu)
-write_tsv(GENE_IDS, 'outputs/gene_ID_mapping.tsv')
-
 
 seu@meta.data %>%
   mutate(CpF=log(nCount_originalexp/nFeature_originalexp)) %>%
@@ -68,8 +66,8 @@ seu@meta.data %>%
   geom_histogram(bins=50)+ 
   scale_x_log10()+
   facet_wrap(~tissue+individual) + #xlim(0,5000) +
-  geom_vline(xintercept = c(1200)) +
-  ggtitle('UMIs per cell (log scale)', 'cutoff = 1200')
+  geom_vline(xintercept = c(500)) +
+  ggtitle('UMIs per cell (log scale)', 'cutoff = 500')
 
 ggsave('outputs/figures/UMIs_per_cell_cutoff.jpeg', width = 6, height = 4, units = 'in', bg = 'white')
 
@@ -79,8 +77,8 @@ seu@meta.data %>%
   ggplot(aes(x=nFeature_originalexp)) +
   geom_histogram()+ scale_x_log10()+
   facet_wrap(~tissue+individual) + #xlim(0,2000) +
-  geom_vline(xintercept = c(500)) +
-  ggtitle('Genes per cell (log scale)', 'cutoff = 500')
+  geom_vline(xintercept = c(250)) +
+  ggtitle('Genes per cell (log scale)', 'cutoff = 250')
 
 ggsave('outputs/figures/genes_per_cell_cutoff.jpeg', width = 6, height = 4, units = 'in', bg = 'white')
 
@@ -95,8 +93,8 @@ seu@meta.data %>%
   scale_x_log10() + 
   scale_y_log10() + 
   theme_classic() +
-  geom_vline(xintercept = 1200) +
-  geom_hline(yintercept = 500)+
+  geom_vline(xintercept = 500) +
+  geom_hline(yintercept = 250)+
   facet_wrap(~tissue)  
   
   
@@ -110,7 +108,7 @@ seu@meta.data %>%
 seu@meta.data %>%
   ggplot(aes(x=subsets_mitochondria_percent)) + geom_histogram(bins=50)+
   facet_wrap(~tissue+individual) + xlim(0,25) +
-  geom_vline(xintercept = c(10))
+  geom_vline(xintercept = c(12.5))
 ggsave('outputs/figures/mitochondria_percent.jpeg', width = 7, height = 5, units = 'in', bg='white')
 
 ## SHOW THIS ONE
@@ -149,20 +147,27 @@ seu@meta.data %>%
 non_rRNA_genes <- GENE_IDS %>% filter(!grepl('_rRNA', name)) %>% pull(seurat_IDs)
 seu <- subset(seu, features=non_rRNA_genes)
 
+
+# WRITE OUT PRE-QC SEURAT OBJECT
+
+library(SeuratDisk)
+
+SaveH5Seurat(seu, 'outputs/pre_QC', overwrite = TRUE)
+
 # 10-8-2022 CHANGED PCT MITO FROM 5 TO 10!!!!
 # calculate cells to remove
 seu@meta.data <-
   seu@meta.data %>%
   mutate(REMOVE=case_when(
-    scDblFinder.class == 'doublet'   ~ 'DOUBLET',
-    subsets_mitochondria_percent > 10 ~ 'PCT_MIT_ABOVE_10',
-    nFeature_originalexp < 500       ~  'GENE_COUNT_BELOW_500',
-    nCount_originalexp < 1200        ~  'UMIs_BELOW_1200',
-    log10GenesPerUMI < 0.8           ~  'COMPLEXITY_BELOW_0.8',
-    # nFeature_originalexp > 3000      ~ 'GENE_COUNT_ABOVE_3000',
-    TRUE                             ~ 'KEEP'),
-    REMOVE=factor(REMOVE, levels = c('KEEP', 'DOUBLET', 'GENE_COUNT_BELOW_500',
-                                     'PCT_MIT_ABOVE_10', 'UMIs_BELOW_1200','COMPLEXITY_BELOW_0.8' )))
+    scDblFinder.class == 'doublet'      ~  'DOUBLET',
+    subsets_mitochondria_percent > 12.5 ~  'PCT_MIT_ABOVE_12.5',
+    nFeature_originalexp < 250          ~  'GENE_COUNT_BELOW_250',
+    nCount_originalexp < 500            ~  'UMIs_BELOW_500',
+    log10GenesPerUMI < 0.8              ~  'COMPLEXITY_BELOW_0.8',
+    # nFeature_originalexp > 3000       ~  'GENE_COUNT_ABOVE_3000',
+    TRUE                                ~  'KEEP'),
+    REMOVE=factor(REMOVE, levels = c('KEEP', 'DOUBLET', 'GENE_COUNT_BELOW_250',
+                                     'PCT_MIT_ABOVE_12.5', 'UMIs_BELOW_500','COMPLEXITY_BELOW_0.8' )))
 
 
 seu@meta.data %>%
@@ -174,7 +179,7 @@ seu@meta.data %>%
   facet_wrap(~individual+tissue, ncol=2) +
   xlab('number of cells') +
   theme(legend.position = 'none') +
-  xlim(0,8500) +
+  xlim(0,10000) +
   ggtitle('Cells removed by different QC metrics')
 
 ggsave('outputs/figures/removed_cells.jpeg', width = 7, height = 5, units = 'in', bg='white')
