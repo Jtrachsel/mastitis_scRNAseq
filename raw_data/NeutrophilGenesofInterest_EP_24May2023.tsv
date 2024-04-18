@@ -1,0 +1,86 @@
+Name	Gene Name	Source of interest	Priority 	Notes:
+CD62L, L selectin	Sell	Personal flow data, Xie 2022	1	Single gene discussion. Mosty interested if differences blood vs milk subsets
+Myloperoxidase	Mpo	Personal flow data, Xie 2022	1	Single gene discussion. Mosty interested if differences blood vs milk subsets
+TLR-2	Tlr2	Divari 2018	1	Single gene discussion. Mosty interested if differences blood vs milk subsets
+TLR-4	Tlr4	Divari 2018	1	Single gene discussion. Mosty interested if differences blood vs milk subsets
+CXCR2	Cxcr2	Rambeaud 2006, Rainard 2008	1	Single gene discussion. Mosty interested if differences blood vs milk subsets
+				
+TF	IRF7	Ai 2022	1	Associated with severe diease patients in Neuts. Mosty interested if differences blood vs milk subsets
+TF	Fos	Ai 2022	2	Associated with neutrophil inflammation. Mosty interested if differences blood vs milk subsets
+TF	Jund	Ai 2022	2	Associated with neutrophil inflammation. Mosty interested if differences blood vs milk subsets
+TF	Nfe2	Ai 2022	2	Associated with neutrophil inflammation. Mosty interested if differences blood vs milk subsets
+TF	Pole3	Ai 2022	2	Associated with neutrophil inflammation. Mosty interested if differences blood vs milk subsets
+TF	Pole4	Ai 2022	2	Associated with neutrophil inflammation. Mosty interested if differences blood vs milk subsets
+TF	Nfe2l2	Ai 2022	2	Associated with neutrophil inflammation. Mosty interested if differences blood vs milk subsets
+TF	Bcl3	Ai 2022	2	Associated with neutrophil inflammation. Mosty interested if differences blood vs milk subsets
+				
+hexosaminidase	Hexa	 Xie 2022, Cowland 2016	3	Azurophil granules. Mosty interested if differences blood vs milk subsets
+serine protease	Prss57	 Xie 2022, Cowland 2016	3	Azurophil granules. Mosty interested if differences blood vs milk subsets
+proteinase 3	Prtn3	 Xie 2022, Cowland 2016	3	Azurophil granules. Mosty interested if differences blood vs milk subsets
+cathepsin G 	Ctsg	 Xie 2022, Cowland 2016	3	Azurophil granules. Mosty interested if differences blood vs milk subsets
+Elastase	Elane	 Xie 2022, Cowland 2016	3	Azurophil granules. Mosty interested if differences blood vs milk subsets
+Myloperoxidase	Mpo	 Xie 2022, Cowland 2016	3	above
+cathepsin C	Ctsc	 Xie 2022, Cowland 2016	3	Azurophil granules. Mosty interested if differences blood vs milk subsets
+lysozyme 2	Lyz2	 Xie 2022, Cowland 2016	3	Specific granules. Mosty interested if differences blood vs milk subsets
+ipocalin 2	Lcn2	 Xie 2022, Cowland 2016	3	Specific granules. Mosty interested if differences blood vs milk subsets
+cytochrome b-245 alpha chain	Cyba	 Xie 2022, Cowland 2016	3	Specific granules. Mosty interested if differences blood vs milk subsets
+cytochrome b-245 beta chain	Cybb	 Xie 2022, Cowland 2016	3	Specific granules. Mosty interested if differences blood vs milk subsets
+neutrophil cytosolic factor 1	Ncf1	 Xie 2022, Cowland 2016	3	Specific granules. Mosty interested if differences blood vs milk subsets
+neutrophil cytosolic factor 4	Ncf4	 Xie 2022, Cowland 2016	3	Specific granules. Mosty interested if differences blood vs milk subsets
+Lactoferrin	Ltf	 Xie 2022, Cowland 2016	1	Specific granules. Mosty interested if differences blood vs milk subsets
+cathelicidin antimicrobial peptide	Camp	 Xie 2022, Cowland 2016	3	Specific granules. Mosty interested if differences blood vs milk subsets
+CEA cell adhesion molecule 1	Ceacam1	 Xie 2022, Cowland 2016	3	Gelantinase granules. Mosty interested if differences blood vs milk subsets
+matrix metallopeptidase 8	Mmp8	 Xie 2022, Cowland 2016	3	Gelantinase granules. Mosty interested if differences blood vs milk subsets
+matrix metallopeptidase 9	Mmp9	 Xie 2022, Cowland 2016	1	Gelantinase granules. Mosty interested if differences blood vs milk subsets
+CD11b, integrin subunit alpha M	Itgam	 Xie 2022, Cowland 2016	1	Gelantinase granules. Mosty interested if differences blood vs milk subsets
+solute carrier family 11	Slc11a1	 Xie 2022, Cowland 2016	3	Gelantinase granules. Mosty interested if differences blood vs milk subsets
+				
+CD62L, L selectin	Sell	Xie 2022	3	above
+CD11b, integrin subunit alpha M	Itgam	Xie 2022	3	above
+CD49d	Itga4	Xie 2022	3	Neutrophil aging. Mosty interested if differences blood vs milk subsets.
+CXC motif chemokine receptor 4	Cxcr4	Xie 2022	3	Neutrophil aging. Mosty interested if differences blood vs milk subsets.
+CXC motif chemokine receptor 2	Cxcr2	Xie 2022	3	above
+CD47	Cd47	Xie 2022	3	Neutrophil aging. Mosty interested if differences blood vs milk subsets.
+CD24	Cd24a	Xie 2022	3	Neutrophil aging. Mosty interested if differences blood vs milk subsets.
+Toll Like Receptor 4	Tlr4	Xie 2022	3	above
+intercellular adhesion molecule 1	Icam1	Xie 2022	3	Neutrophil aging. Mosty interested if differences blood vs milk subsets.
+CD11c	Itgax	Xie 2022	3	Neutrophil aging. Mosty interested if differences blood vs milk subsets.
+				
+ABR activator of RhoGEF and GTPase	Abr	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+platelet-activating factor receptor	Ptafr	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+TYRO protein tyrosine kinase binding protein	Tyrobp	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+syntaxin 11	Stx11	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+BCR activator of RhoGEF and GTPase	Bcr	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+spleen associated tyrosine kinase	Syk	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+vesicle associated membrane protein 7	Vamp7	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+deoxyribonuclease 1 	Dnase1	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+deoxyribonuclease 1 like 3	Dnase1l3	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+Fc epsilon receptor Ig	Fcer1g	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+PML-RARA regulated adaptor molecule 1	Pram1	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+integrin subunit beta 2	Itgb2	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+CD11b, integrin subunit alpha M	Itgam	Xie 2022	3	above
+CD177	Cd177	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+annexin A3 	Anxa3	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+myosin IF	Myo1f	Xie 2022	3	Neutrophil activation. Mosty interested if differences blood vs milk subsets.
+				
+matrix metallopeptidase 9	MMP9	Wigerblad 2022	3	above
+CD11b	ITGAM	Wigerblad 2022	3	above
+ficolin 1	FCN1	Wigerblad 2022	3	Nh0 Maturity marker. Mosty interested if differences blood vs milk subsets
+cathelicidin antimicrobial peptide	CAMP	Wigerblad 2022	3	above
+cytochrome b-245 beta chain	CYBB	Wigerblad 2022	3	above
+cystatin C	CST3	Wigerblad 2022	3	Nh0 Maturity marker. Mosty interested if differences blood vs milk subsets
+vimentin	VIM	Wigerblad 2022	3	Nh0 Maturity marker. Mosty interested if differences blood vs milk subsets
+thioredoxin	TXN	Wigerblad 2022	3	Nh0 Maturity marker. Mosty interested if differences blood vs milk subsets
+allograft inflammatory factor 1	AIF1	Wigerblad 2022	3	Nh1 Maturity marker. Mosty interested if differences blood vs milk subsets
+thioredoxin interacting protein	TXNIP	Wigerblad 2022	3	Nh1 Maturity marker. Mosty interested if differences blood vs milk subsets
+CXCR2	CXCR2	Wigerblad 2022	3	Already above
+metastasis associated lung adenocarcinoma transcript 1 	MALAT1	Wigerblad 2022	3	Nh2 Maturity marker. Mosty interested if differences blood vs milk subsets
+uclear paraspeckle assembly transcript 1	NEAT1	Wigerblad 2022	3	Nh2 Maturity marker. Mosty interested if differences blood vs milk subsets
+colony stimulating factor 3 receptor	CSF3R	Wigerblad 2022	3	Nh2 Maturity marker. Mosty interested if differences blood vs milk subsets
+HECT and RLD domain containing E3 ubiquitin protein ligase 5	HERC5	Wigerblad 2022	3	Nh3 Maturity marker. Mosty interested if differences blood vs milk subsets
+interferon gamma inducible protein 16	IFI16	Wigerblad 2022	3	Nh3 Maturity marker. Mosty interested if differences blood vs milk subsets
+interferon induced protein with tetratricopeptide repeats 1	IFIT1	Wigerblad 2022	3	Nh3 Maturity marker. Mosty interested if differences blood vs milk subsets
+interferon induced protein with tetratricopeptide repeats 2	IFIT2	Wigerblad 2022	3	Nh3 Maturity marker. Mosty interested if differences blood vs milk subsets
+interferon induced transmembrane protein 2	IFITM2	Wigerblad 2022	3	Nh3 Maturity marker. Mosty interested if differences blood vs milk subsets
+interferon induced transmembrane protein 3	IFITM3	Wigerblad 2022	3	Nh3 Maturity marker. Mosty interested if differences blood vs milk subsets
+ISG15 ubiquitin like modifier	ISG15	Wigerblad 2022	3	Nh3 Maturity marker. Mosty interested if differences blood vs milk subsets
